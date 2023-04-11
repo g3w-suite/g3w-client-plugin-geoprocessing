@@ -7,6 +7,12 @@ const {GUI} = g3wsdk.gui;
 
 const Plugin = function() {
   const {name, i18n} = pluginConfig;
+  this.addFontClasses([
+    {
+      name: 'geo-tools',
+      className: "fas fa-tools"
+    }
+  ]);
   base(this, {
     name,
     i18n,
@@ -42,13 +48,13 @@ Plugin.prototype.setupGui = function() {
   this.createSideBarComponent(SidebarComponent,
     {
       id: name,
-      title: 'Custom Sidebar Component', // textual description on left sidebar (eg. "metadata")
-      collapsible: true,                 // true = collapsible button; false = button
-      open: false,                       // if (collapsible) expand the button when plugin is loaded
-      isolate: false,                    // true = click event doesn't propagate to all sidebar item
+      title: 'Geoprocessing',
+      collapsible: true,
+      open: false,
+      isolate: false,
       iconConfig: {
-        color: 'yellow',                 // color of icon
-        icon:'pin',                      // see gui\vue\vueappplugin.js font list
+        color: 'red',
+        icon: 'geo-tools',
       },
       mobile: true,
       /**
@@ -61,7 +67,7 @@ Plugin.prototype.setupGui = function() {
         }
       },
       sidebarOptions: {
-        position: 0                     // can be a number or a string 
+        position: 'spatialbookmarks'                     // can be a number or a string
       }
     }
   );

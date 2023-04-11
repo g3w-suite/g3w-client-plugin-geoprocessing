@@ -78,5 +78,8 @@ gulp.task('watch',['browserify']);
 
 gulp.task('build',['production','browserify']);
 
+gulp.task('default',['production','browserify']);
+
+
 
 
