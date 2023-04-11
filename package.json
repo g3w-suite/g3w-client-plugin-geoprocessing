@@ -1,5 +1,5 @@
 {
-  "name": "sidebar",
+  "name": "geoprocessing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -14,18 +14,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/g3w-suite/g3w-client-plugin-elevation-profile.git"
+    "url": "git+https://github.com/g3w-suite/g3w-client-plugin-geoprocessing.git"
   },
   "keywords": [
-    "editing",
+    "geoprocessing",
     "plugin"
   ],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/g3w-suite/g3w-client-plugin-elevation-profile/issues"
+    "url": "https://github.com/g3w-suite/g3w-client-plugin-geoprocessing/issues"
   },
-  "homepage": "https://github.com/g3w-suite/g3w-client-plugin-elevation-profile/#readme",
+  "homepage": "https://github.com/g3w-suite/g3w-client-plugin-geoprocessing/#readme",
   "browserslist": "defaults",
   "engines" : {
     "node" : ">=16.13.2",
