@@ -1,5 +1,5 @@
 {
-  "name": "processing",
+  "name": "qprocessing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -18,7 +18,8 @@
   },
   "keywords": [
     "geoprocessing",
-    "plocessing",
+    "processing",
+    "qprocessing",
     "G3W-SUITE",
     "QGIS",
     "plugin"
