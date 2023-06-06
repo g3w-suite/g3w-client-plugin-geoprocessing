@@ -1,5 +1,5 @@
 {
-  "name": "geoprocessing",
+  "name": "processing",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -14,18 +14,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/g3w-suite/g3w-client-plugin-geoprocessing.git"
+    "url": "git+https://github.com/g3w-suite/g3w-client-plugin-processing.git"
   },
   "keywords": [
     "geoprocessing",
+    "plocessing",
+    "G3W-SUITE",
+    "QGIS",
     "plugin"
   ],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/g3w-suite/g3w-client-plugin-geoprocessing/issues"
+    "url": "https://github.com/g3w-suite/g3w-client-plugin-processing/issues"
   },
-  "homepage": "https://github.com/g3w-suite/g3w-client-plugin-geoprocessing/#readme",
+  "homepage": "https://github.com/g3w-suite/g3w-client-plugin-processing/#readme",
   "browserslist": "defaults",
   "engines" : {
     "node" : ">=16.13.2",
