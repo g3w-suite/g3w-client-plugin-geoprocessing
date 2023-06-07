@@ -7,12 +7,6 @@ const {GUI} = g3wsdk.gui;
 
 const Plugin = function() {
   const {name, i18n} = pluginConfig;
-  this.addFontClasses([
-    {
-      name: 'geo-tools',
-      className: "fas fa-tools"
-    }
-  ]);
   base(this, {
     name,
     i18n,
@@ -53,8 +47,8 @@ Plugin.prototype.setupGui = function() {
       open: false,
       isolate: false,
       iconConfig: {
-        color: 'red',
-        icon: 'geo-tools',
+        color: 'green',
+        icon: 'tools',
       },
       mobile: true,
       /**
