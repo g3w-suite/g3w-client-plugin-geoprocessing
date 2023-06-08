@@ -1,6 +1,6 @@
 import pluginConfig from './config';
 import Service from "./service";
-import SidebarComponent from './components/sidebar.vue';
+import SidebarComponent from './components/Sidebar.vue';
 const {base, inherit} = g3wsdk.core.utils;
 const {Plugin: BasePlugin} = g3wsdk.core.plugin;
 const {GUI} = g3wsdk.gui;

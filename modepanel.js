@@ -1,6 +1,6 @@
-import pluginConfig  from '../config';
+import pluginConfig  from './config';
 
-import ModelPanelVueComponent from './modelpanel.vue';
+import ModelPanelVueComponent from './components/ModelPanel.vue';
 const {base, inherit} = g3wsdk.core.utils;
 const {Panel} = g3wsdk.gui;
 
@@ -10,7 +10,9 @@ function ModelPanel(options={}) {
   base(options);
   const ModelPanelVueComponentClass = Vue.extend(ModelPanelVueComponent);
   const internalPanel = new ModelPanelVueComponentClass({
-    model: options.model
+    propsData: {
+      model: options.model,
+    }
   });
   this.setInternalPanel(internalPanel);
 }

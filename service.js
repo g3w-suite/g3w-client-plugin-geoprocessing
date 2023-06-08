@@ -1,25 +1,75 @@
-const {
-  utils: {
-    base, inherit
-  },
-  plugin:{
-    PluginService
-  }
-} = g3wsdk.core;
+const {utils: {base, inherit}, plugin:{PluginService}} = g3wsdk.core;
+const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
 
 function Service(){
   base();
   /**
-   * get plugin config object
-   * @param config
+   *
+   * @param config <Object> Plugin config object
    */
   this.init = function(config={}){
-    /**
-     *  PLUGIN SERVICE INIT FUNCTION
-     */
+
+    this.config = config;
+
+    this.transpilModelInputsAsEditingFormInputs();
+
+    this.mapService = GUI.getService('map');
+
+    this.project = ProjectsRegistry.getCurrentProject();
+
     this.emit('ready', true);
+  };
+
+  /**
+   * @TODO
+   */
+  this.transpilModelInputsAsEditingFormInputs = function(){
+    this.config.models.forEach(model => {
+      model.inputs.forEach(input => {
+        input.visible = true; // set visibility of input
+        input.validate = {
+          empty: true,
+          message: null,
+          required: true,
+          unique: false,
+          valid: false,
+          _valid: false,
+          ...input.validate
+        }
+      })
+    })
+  };
+
+  /**
+   * Method to check if a layer has selected features
+   * @param layerId
+   * @returns {*}
+   */
+  this.hasLayerSelectedFeatures = function(layerId){
+    return this.mapService.defaultsLayers.selectionLayer
+      .getSource()
+      .getFeatures()
+      .find(feature => feature.__layerId === layerId);
+  }
+
+  /**
+   * Get all Project Vector Layers that has geometry types
+   * @param geometry_types <Array> of Geometry types Es.Linestring, etc..
+   * return <Array>
+   */
+  this.getVectorProjectLayersByGeometryTypes = function(geometry_types=[]){
+    const layers = [];
+    this.project.getLayers().forEach(layer => {
+      if (layer.geometrytype && geometry_types.indexOf(layer.geometrytype) !== -1) {
+        layers.push({
+          key: layer.name,
+          value: layer.id
+        })
+      }
+    })
+    return layers;
   };
 
   /**
@@ -27,10 +77,9 @@ function Service(){
    * @param model
    * @returns {Promise<unknown>}
    */
-  this.runModel = async function(model){
+  this.runModel = async function({model, state}={}){
     return new Promise(async (resolve, reject) => {
       let timeoutprogressintervall;
-      let task_progress;
       /**
        * listener method to handle task request
        * @param task_id
@@ -51,10 +100,10 @@ function Service(){
           });
         }
         else if (status === 'executing') {
-          if (task_progress === null || task_progress === undefined) {
+          if (state.progress === null || state.progress === undefined) {
             timeoutprogressintervall = Date.now();
           } else {
-            if (progress > task_progress) timeoutprogressintervall = Date.now();
+            if (progress > state.progress) timeoutprogressintervall = Date.now();
             else {
               if ((Date.now() - timeoutprogressintervall) > 600000){
                 TaskService.stopTask({
@@ -65,7 +114,7 @@ function Service(){
                   message: 'Timeout',
                   autoclose: true
                 });
-                task_progress = null;
+                state.progress = null;
                 timeoutprogressintervall = null;
                 reject({
                   timeout: true
@@ -73,11 +122,11 @@ function Service(){
               }
             }
           }
-          task_progress = progress;
+          state.progress = progress;
         } else if ( status === '500') {
           const {status, exception} = response.responseJSON || {};
           const statusError = status === 'error';
-          task_progress = null;
+          state.progress = null;
           timeoutprogressintervall = null;
           TaskService.stopTask({
             task_id
@@ -101,10 +150,8 @@ function Service(){
         method: 'POST',
         listener
       })
-      setTimeout(resolve, 3000)
     })
   }
-
 }
 
 inherit(Service, PluginService);
