@@ -1,5 +1,5 @@
 <template>
-  <div class="form-group" v-if="visible">
+  <div class="form-group" v-if="state.visible">
     <slot name="label">
       <label :for="state.name" v-disabled="!state.editable" class="col-sm-12 ">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
@@ -37,7 +37,6 @@ export default {
   data(){
     return {
       value: null,
-      visible: false
     }
   },
   watch: {
@@ -48,12 +47,10 @@ export default {
   },
   created(){
     this.state.input.options.values = Service.getVectorProjectLayersByGeometryTypes(this.state.input.options.datatypes);
-    this.visible = this.state.input.options.values.length > 0;
-    if (this.visible) {
+    if (this.state.input.options.values.length > 0) {
       this.value = this.state.input.options.values[0].value;
+      this.state.validate.valid = true;
     }
-    this.state.validate.valid = this.visible;
-
   },
   async mounted(){
     await this.$nextTick();

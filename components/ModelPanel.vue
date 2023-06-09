@@ -26,6 +26,12 @@
     <section class="qprocessing-model-outputs">
       <div class="title">OUTPUTS</div>
       <divider/>
+      <div>
+        <component
+          v-for="output in model.outputs" :key="output.name"
+          :state="output"
+          :is="`${output.type}`"/>
+      </div>
     </section>
 
     <section class="qprocess-model-footer">
@@ -40,7 +46,8 @@
 </template>
 
 <script>
-import FormInputs from '../form/inputs';
+import ModelInputs from '../form/inputs';
+import ModelOutputs from '../form/outputs';
 import Service from '../service';
 
 const { formInputsMixins } = g3wsdk.gui.vue.Mixins;
@@ -48,7 +55,8 @@ export default {
   name: "modelPanel",
   mixins: [formInputsMixins],
   components: {
-    ...FormInputs
+    ...ModelInputs,
+    ...ModelOutputs
   },
   props: {
     model: {
