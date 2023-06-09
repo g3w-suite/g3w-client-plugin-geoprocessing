@@ -94,9 +94,7 @@ export default {
     }
   },
   created(){},
-  async mounted() {
-    console.log(this.tovalidate, this.valid)
-  },
+  async mounted() {},
   async beforeDestroy(){}
 }
 </script>

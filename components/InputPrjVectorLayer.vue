@@ -46,7 +46,7 @@ export default {
     }
   },
   created(){
-    this.state.input.options.values = Service.getVectorProjectLayersByGeometryTypes(this.state.input.options.datatypes);
+    this.state.input.options.values = Service.getInputPrjVectorLayerData(this.state.input.options.datatypes);
     if (this.state.input.options.values.length > 0) {
       this.value = this.state.input.options.values[0].value;
       this.state.validate.valid = true;

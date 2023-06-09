@@ -1,4 +1,7 @@
-const {utils: {base, inherit}, plugin:{PluginService}} = g3wsdk.core;
+const {
+  utils: {base, inherit},
+  geoutils: {isSameBaseGeometryType},
+  plugin:{PluginService}} = g3wsdk.core;
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
@@ -56,18 +59,73 @@ function Service(){
 
   /**
    * Get all Project Vector Layers that has geometry types
-   * @param geometry_types <Array> of Geometry types Es.Linestring, etc..
+   * @param datatypes <Array> of String
+   *   'nogeometry',
+   *   'point',
+   *   'line',
+   *   'polygon',
+   *   'anygeometry'
    * return <Array>
    */
-  this.getVectorProjectLayersByGeometryTypes = function(geometry_types=[]){
+  this.getInputPrjVectorLayerData = function(datatypes=[]){
     const layers = [];
-    this.project.getLayers().forEach(layer => {
-      if (layer.geometrytype && geometry_types.indexOf(layer.geometrytype) !== -1) {
-        layers.push({
-          key: layer.name,
-          value: layer.id
-        })
-      }
+
+    //check if any geometry layer type is request
+    const anygeometry = "undefined" !== typeof datatypes.find(data_type => data_type === 'anygeometry');
+    //check if no geometry layer type is request
+    const nogeometry = "undefined" !== typeof datatypes.find(data_type => data_type === 'nogeometry');
+
+    this.project.getLayers()
+      //exclude base layer
+      .filter(layer => !layer.baselayer)
+      .forEach(layer => {
+        //get layer if it has no geometry
+        if (true === nogeometry) {
+
+          if (nogeometry && "undefined" === typeof layer.geometrytype) {
+            layers.push({
+              key: layer.name,
+              value: layer.id
+            })
+            return;
+          }
+        }
+
+        if ("undefined" !== typeof layer.geometrytype) {
+          // in case of any geometry type
+          if (true === anygeometry) {
+
+            layers.push({
+              key: layer.name,
+              value: layer.id
+            })
+
+          } else {
+
+            //get geometry_types only from data_types array
+            const geometry_types = datatypes
+              .filter(data_type => ['point', 'line', 'polygon'].indexOf(data_type) !== -1)
+              .map(geometry_type => {
+                switch (geometry_type){
+                  case 'point':
+                    return 'Point';
+                  case 'line':
+                    return 'LineString';
+                  case 'polygon':
+                    return 'Polygon';
+                }
+              });
+
+            if (geometry_types.length > 0) {
+              if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometrytype))) {
+                layers.push({
+                  key: layer.name,
+                  value: layer.id
+                })
+              }
+            }
+          }
+        }
     })
     return layers;
   };
@@ -142,11 +200,19 @@ function Service(){
           })
         }
       };
+      const data = model.inputs.reduce((accumulator, input) => {
+        if (input.value) {
+          accumulator[input.name] = input.value;
+        }
+        return accumulator;
+      }, {})
       // start to run Task
       await TaskService.runTask({
-        url: '', // url model
-        taskUrl: this.urls.task, // url to ask task is end
-        params: {}, // request params
+        url: `${this.config.urls.run}${model.id}/${this.project.getId()}/`, // url model
+        taskUrl: this.config.urls.taskInfo, // url to ask task is end
+        params: {
+          data: JSON.stringify(data)
+        }, // request params
         method: 'POST',
         listener
       })
