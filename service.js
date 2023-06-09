@@ -41,6 +41,14 @@ function Service(){
           _valid: false,
           ...input.validate
         }
+        input.get_default_value = true;
+
+        /**
+         * @TODO Remove when fix input service on core gui/inputs/service.js#39
+         */
+        if (input.input.options && input.input.options.default) {
+          input.value = input.input.options.default;
+        }
       })
     })
   };
