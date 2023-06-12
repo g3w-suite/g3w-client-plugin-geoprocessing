@@ -46,6 +46,7 @@ function Service(){
         /**
          * @TODO Remove when fix input service on core gui/inputs/service.js#39
          */
+        input.value = null;
         if (input.input.options && input.input.options.default) {
           input.value = input.input.options.default;
         }
@@ -217,7 +218,7 @@ function Service(){
       // start to run Task
       await TaskService.runTask({
         url: `${this.config.urls.run}${model.id}/${this.project.getId()}/`, // url model
-        taskUrl: this.config.urls.taskInfo, // url to ask task is end
+        taskUrl: this.config.urls.taskinfo, // url to ask task is end
         params: {
           data: JSON.stringify(data)
         }, // request params
