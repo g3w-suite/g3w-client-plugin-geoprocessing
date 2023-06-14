@@ -30,6 +30,7 @@
         <component
           v-for="output in model.outputs" :key="output.name"
           :state="output"
+          :task="task"
           :is="`${output.input.type}`"/>
       </div>
     </section>
@@ -72,7 +73,8 @@ export default {
         loading: false,
         progress: null,
       },
-      tovalidate: []
+      tovalidate: [],
+      task: null
     }
   },
   methods: {
@@ -84,13 +86,13 @@ export default {
       this.changeInput(input);
     },
     /**
-     * Run model metod
+     * Run model method
      * @returns {Promise<void>}
      */
     async run(){
       this.loading = true;
       try {
-        const {task_result} = await Service.runModel({
+        this.task = await Service.runModel({
           model: this.model,
           state: this.state
         });
