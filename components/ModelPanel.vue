@@ -30,14 +30,17 @@
         <component
           v-for="output in model.outputs" :key="output.name"
           :state="output"
-          :is="`${output.type}`"/>
+          :is="`${output.input.type}`"/>
       </div>
     </section>
 
     <section class="qprocess-model-footer">
       <div>
         <progressbar :progress="state.progress"/>
-        <button class="btn skin-background-color run"  @click.stop="run" :disabled="!valid">
+        <button
+            class="btn skin-background-color run"
+            @click.stop="run"
+            :disabled="!valid">
           <i :class="g3wtemplate.font['run']"></i>
         </button>
       </div>
@@ -86,10 +89,15 @@ export default {
      */
     async run(){
       this.loading = true;
-      await Service.runModel({
-        model: this.model,
-        state: this.state
-      });
+      try {
+        const {task_result} = await Service.runModel({
+          model: this.model,
+          state: this.state
+        });
+      } catch(err){
+        console.log(err)
+      }
+
       this.loading = false;
     }
   },
@@ -112,5 +120,8 @@ export default {
   }
   .qprocessing-model-inputs .g3w-form {
     background-color: transparent !important;
+  }
+  .qprocess-model-footer {
+    margin-top: 10px;
   }
 </style>

@@ -1,4 +1,4 @@
-import outputVector from "../components/OutputVector.vue";
+import outputvectorlayer from "../components/OutputVectorLayer.vue";
 export default {
-  outputVector
+  outputvectorlayer
 }

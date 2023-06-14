@@ -144,7 +144,7 @@ function Service(){
    * @param model
    * @returns {Promise<unknown>}
    */
-  this.runModel = async function({model, state}={}){
+  this.runModel = function({model, state}={}){
     return new Promise(async (resolve, reject) => {
       let timeoutprogressintervall;
       /**
@@ -165,8 +165,7 @@ function Service(){
             result,
             task_result,
           });
-        }
-        else if (status === 'executing') {
+        } else if (status === 'executing') {
           if (state.progress === null || state.progress === undefined) {
             timeoutprogressintervall = Date.now();
           } else {
@@ -190,7 +189,7 @@ function Service(){
             }
           }
           state.progress = progress;
-        } else if ( status === '500') {
+        } else if ( status === '500' || status === 500) {
           const {status, exception} = response.responseJSON || {};
           const statusError = status === 'error';
           state.progress = null;
@@ -209,14 +208,22 @@ function Service(){
           })
         }
       };
-      const data = model.inputs.reduce((accumulator, input) => {
-        if (input.value) {
-          accumulator[input.name] = input.value;
-        }
-        return accumulator;
-      }, {})
+      const data = {
+        inputs: model.inputs.reduce((accumulator, input) => {
+          if (input.value) {
+            accumulator[input.name] = input.value;
+          }
+          return accumulator;
+        }, {}),
+        outputs: model.outputs.reduce((accumulator, output) => {
+          if (output.value) {
+            accumulator[output.name] = output.value;
+          }
+          return accumulator;
+        }, {}),
+      }
       // start to run Task
-      await TaskService.runTask({
+      TaskService.runTask({
         url: `${this.config.urls.run}${model.id}/${this.project.getId()}/`, // url model
         taskUrl: this.config.urls.taskinfo, // url to ask task is end
         params: {
@@ -227,6 +234,12 @@ function Service(){
       })
     })
   }
+
+  /**
+   * @TODO
+   * @param layer
+   */
+  this.addOutputVectorLayer = function(layer){}
 }
 
 inherit(Service, PluginService);
