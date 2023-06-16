@@ -1,7 +1,7 @@
 <template>
   <div class="form-group" v-if="state.visible">
     <slot name="label">
-      <label :for="state.name" v-disabled="!state.editable" class="col-sm-12 ">{{ state.label }}
+      <label :for="state.name" v-disabled="!state.editable" class="col-sm-12">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
       </label>
     </slot>

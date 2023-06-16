@@ -26,13 +26,17 @@
     <section class="qprocessing-model-outputs">
       <div class="title">OUTPUTS</div>
       <divider/>
-      <div>
-        <component
-          v-for="output in model.outputs" :key="output.name"
-          :state="output"
-          :task="task"
-          :is="`${output.input.type}`"/>
-      </div>
+      <form class="form-horizontal g3w-form">
+          <div class="box-primary">
+            <div class="box-body">
+              <component
+                v-for="output in model.outputs" :key="output.name"
+                :state="output"
+                :task="task"
+                :is="`${output.input.type}`"/>
+            </div>
+          </div>
+        </form>
     </section>
 
     <section class="qprocess-model-footer">
@@ -120,7 +124,7 @@ export default {
   .qprocessing-model-inputs {
     margin-bottom: 5px;
   }
-  .qprocessing-model-inputs .g3w-form {
+  .qprocessing-model-inputs .g3w-form, .qprocessing-model-outputs .g3w-form {
     background-color: transparent !important;
   }
   .qprocess-model-footer {
