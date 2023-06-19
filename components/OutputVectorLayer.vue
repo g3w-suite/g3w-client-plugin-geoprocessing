@@ -11,8 +11,8 @@
         class="magic-checkbox"
         v-model="checked"
         type="checkbox"
-        :id="state.name">
-      <label style="margin-top: 10px;" :for="state.name"  v-t-plugin="'qprocessing.outputs.outputvector.open_file_on_map'"></label>
+        :id="`${state.name}_checkbox`">
+      <label style="margin-top: 10px;" :for="`${state.name}_checkbox`"  v-t-plugin="'qprocessing.outputs.outputvector.open_file_on_map'"></label>
     </div>
   </div>
 </template>
@@ -34,7 +34,6 @@ export default {
     }
   },
   data() {
-    console.log(this.state)
     this.state.value = this.state.input.options.values[0].value;
     return {
       checked: true,
