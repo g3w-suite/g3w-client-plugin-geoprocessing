@@ -62,9 +62,8 @@ export default {
       handler(value) {
         if (true === this.isSelectedFeatures) {
           this.setDisabledSelectFeturesCheckbox(value);
-        } else {
-          this.state.value = value;
         }
+        this.state.value = value;
         this.$emit('changeinput', this.state);
       },
       immediate: true
