@@ -65,7 +65,7 @@ function Service(){
     return this.mapService.defaultsLayers.selectionLayer
       .getSource()
       .getFeatures()
-      .filter(feature => feature.__layerId === layerId).map(feature => feature.get(G3W_FID))
+      .filter(feature => feature.__layerId === layerId).map(feature => feature.getId());
   }
 
   /**
