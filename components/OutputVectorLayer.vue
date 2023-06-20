@@ -84,14 +84,17 @@ export default {
            const layer = await createVectorLayerFromFile({
              name,
              data,
-             crs: GUI.getService('map').getEpsg(),
+             crs: GUI.getService('map').getEpsg(), //@TODO
              mapCrs: GUI.getService('map').getEpsg(),
              type
            });
            layer.setStyle(createStyleFunctionToVectorLayer({
              color: 'blue'
            }));
-           GUI.getService('map').addExternalLayer(layer, {type});
+           GUI.getService('map').addExternalLayer(layer, {
+             type,
+             downloadUrl: fileUrl
+           });
        });
 
      } else { // download

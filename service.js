@@ -2,12 +2,15 @@ const {
   utils: {base, inherit},
   geoutils: {isSameBaseGeometryType},
   plugin:{PluginService}} = g3wsdk.core;
+const {G3W_FID} = g3wsdk.constant;
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
 
 function Service(){
   base();
+  const self = this;
+
   /**
    *
    * @param config <Object> Plugin config object
@@ -42,29 +45,53 @@ function Service(){
           ...input.validate
         }
         input.get_default_value = true;
-
-        /**
-         * @TODO Remove when fix input service on core gui/inputs/service.js#39
-         */
-        input.value = null;
-        if (input.input.options && input.input.options.default) {
-          input.value = input.input.options.default;
-        }
       })
     })
   };
+
+  /**
+   *
+   */
+  this.emitChangeSelectedFeatures = function(){
+    self.emit('change-selected-features');
+  }
 
   /**
    * Method to check if a layer has selected features
    * @param layerId
    * @returns {*}
    */
-  this.hasLayerSelectedFeatures = function(layerId){
+  this.getLayerSelectedFeaturesIds = function(layerId){
     return this.mapService.defaultsLayers.selectionLayer
       .getSource()
       .getFeatures()
-      .find(feature => feature.__layerId === layerId);
+      .filter(feature => feature.__layerId === layerId).map(feature => feature.get(G3W_FID))
   }
+
+  /**
+   * Register event on source selectionLayer
+   * @param layerId
+   */
+  this.registersSelectedFeatureLayersEvent = function(layerId){
+
+    this.mapService.defaultsLayers.selectionLayer.getSource().on('addfeature', self.emitChangeSelectedFeatures);
+
+    this.mapService.defaultsLayers.selectionLayer.getSource().on('removefeature', self.emitChangeSelectedFeatures);
+
+  }
+
+
+  /**
+   * Unregister
+   */
+  this.unregistersSelectedFeatureLayersEvent = function(){
+
+    this.mapService.defaultsLayers.selectionLayer.getSource().un('addfeature', self.emitChangeSelectedFeatures);
+
+    this.mapService.defaultsLayers.selectionLayer.getSource().un('removefeature', self.emitChangeSelectedFeatures);
+  };
+
+
 
   /**
    * Get all Project Vector Layers that has geometry types
@@ -84,6 +111,7 @@ function Service(){
     //check if no geometry layer type is request
     const nogeometry = "undefined" !== typeof datatypes.find(data_type => data_type === 'nogeometry');
 
+
     this.project.getLayers()
       //exclude base layer
       .filter(layer => !layer.baselayer)
@@ -91,7 +119,10 @@ function Service(){
         //get layer if it has no geometry
         if (true === nogeometry) {
 
-          if (nogeometry && "undefined" === typeof layer.geometrytype) {
+          if (
+            (true === nogeometry) &&
+            ("undefined" === typeof layer.geometrytype || "NoGeometry" === layer.geometrytype)
+          ) {
             layers.push({
               key: layer.name,
               value: layer.id
@@ -100,7 +131,10 @@ function Service(){
           }
         }
 
-        if ("undefined" !== typeof layer.geometrytype) {
+        if (
+          ("undefined" !== typeof layer.geometrytype) &&
+          ("NoGeometry" !== layer.geometrytype)
+        ) {
           // in case of any geometry type
           if (true === anygeometry) {
 
