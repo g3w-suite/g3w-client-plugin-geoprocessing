@@ -2,13 +2,12 @@ const {
   utils: {base, inherit},
   geoutils: {isSameBaseGeometryType},
   plugin:{PluginService}} = g3wsdk.core;
-const {G3W_FID} = g3wsdk.constant;
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
 
 function Service(){
-  base();
+  base(this);
   const self = this;
 
   /**
