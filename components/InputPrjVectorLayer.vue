@@ -36,8 +36,11 @@
 
 <script>
 import Service from '../service';
+const { selectMixin } = g3wsdk.gui.vue.Mixins;
+
 export default {
   name: "InputPrjVectorLayer",
+  mixins: [selectMixin],
   props: {
     state: {
       type: Object,
@@ -54,6 +57,9 @@ export default {
   computed: {
     isSelectedFeatures(){
       return this.state.input.type === 'prjvectorlayerfeature';
+    },
+    notvalid() {
+      return this.state.validate.valid === false;
     }
   },
   watch: {
@@ -104,7 +110,6 @@ export default {
     }
   },
   created() {
-
     this.state.input.options.values = Service.getInputPrjVectorLayerData(this.state.input.options.datatypes);
 
     if (this.state.input.options.values.length > 0) {
@@ -124,7 +129,9 @@ export default {
   },
   async mounted(){
     await this.$nextTick();
+    this.select2 = $(this.$refs.select);
     this.$emit('addinput', this.state);
+
   },
   beforeDestroy(){
     if (true === this.isSelectedFeatures) {

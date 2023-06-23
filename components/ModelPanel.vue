@@ -8,10 +8,12 @@
     <section class="qprocessing-model-inputs">
       <div class="title" >INPUTS</div>
       <divider/>
+
       <form class="form-horizontal g3w-form">
         <div class="box-primary">
           <div class="box-body">
             <component
+              @register-change-input="registerChangeInputEvent"
               @addinput="addToValidate"
               @changeinput="_changeInput(input)"
               v-for="input in model.inputs" :key="input.name"
@@ -82,11 +84,22 @@ export default {
     }
   },
   methods: {
+    registerChangeInputEvent({inputName, handler}={}) {
+
+      if ("undefined" === typeof this.subscribe_change_input[inputName]) {
+        this.subscribe_change_input[inputName] = []
+      }
+
+      this.subscribe_change_input[inputName].push(handler)
+    },
     /**
      * Method to handle change input
      * @param input
      */
-    async _changeInput(input){
+    async _changeInput(input) {
+      if (Array.isArray(this.subscribe_change_input[input.name])) {
+        this.subscribe_change_input[input.name].forEach(handler => handler(input.value))
+      }
       this.changeInput(input);
     },
     /**
@@ -107,7 +120,9 @@ export default {
       this.loading = false;
     }
   },
-  created(){},
+  created(){
+    this.subscribe_change_input = {};
+  },
   async mounted() {},
   async beforeDestroy(){}
 }

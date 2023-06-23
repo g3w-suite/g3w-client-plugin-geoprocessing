@@ -49,6 +49,25 @@ function Service(){
   };
 
   /**
+   * Method to extract fields from project layerId based on options
+   *
+   * @param layerId
+   * @param options
+   */
+  this.getFieldsFromLayer = function(layerId, options) {
+    return this.project.getLayerById(layerId).getFields().filter(field => {
+      if (options.datatype === 'any') return true;
+      else if (options.datatype === 'string') {
+        return true
+      }
+
+    }).map(field => ({
+      key: field.label,
+      value: field.name
+    }))
+  }
+
+  /**
    *
    */
   this.emitChangeSelectedFeatures = function(){

@@ -1,7 +1,15 @@
 export default {
   inputs: {
     prjvectorlayerfeature: {
-      selected_features: "Solo features selezionate"
+      selected_features: "Solo features selezionate",
+    },
+    fieldchooser: {
+      validate: {
+        message: {
+          multiple: "Seleziona almeno un campo",
+          single: "Seleziona un campo"
+        }
+      }
     }
   },
   outputs: {
