@@ -7,6 +7,7 @@ const {GUI} = g3wsdk.gui;
 
 const Plugin = function() {
   const {name, i18n} = pluginConfig;
+
   base(this, {
     name,
     i18n,

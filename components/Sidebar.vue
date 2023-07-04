@@ -1,10 +1,10 @@
 <template>
-    <ul id="g3w-client-plugin-qprocessing" class="treeview-menu g3w-search g3w-tools menu-items">
-        <li v-for="model in models" :key="model.id" class="menu-item" @click.top="showPanel(model)">
-            <i :class="g3wtemplate.getFontClass('tool')"></i>
-            <span>{{model.display_name}}</span>
-        </li>
-    </ul>
+  <ul id="g3w-client-plugin-qprocessing" class="treeview-menu g3w-search g3w-tools menu-items">
+    <li v-for="model in models" :key="model.id" class="menu-item" @click.top="showPanel(model)">
+      <i :class="g3wtemplate.getFontClass('tool')"></i>
+      <span>{{model.display_name}}</span>
+    </li>
+  </ul>
 </template>
 
 <script>
@@ -17,12 +17,9 @@ export default {
       models: Service.config.models
     };
   },
-  computed: {},
   methods:{
     showPanel(model){
-      const panel = new ModelPanel({
-        model
-      });
+      const panel = new ModelPanel({model});
       panel.show();
     }
   },

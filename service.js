@@ -15,25 +15,29 @@ function Service(){
    * @param config <Object> Plugin config object
    */
   this.init = function(config={}){
-
+    //get plugin configuration object
     this.config = config;
 
-    this.transpilModelInputsAsEditingFormInputs();
-
+    //get map service
     this.mapService = GUI.getService('map');
 
+    // get current project
     this.project = ProjectsRegistry.getCurrentProject();
+
+    // manage and adapt model inputs with all input editing attributes needed
+    this.transpilModelInputsAsEditingFormInputs();
 
     this.emit('ready', true);
   };
 
   /**
-   * @TODO
+   * Method to trasform/trasnpile model inputs with the same attributes needed by editing inputs
    */
   this.transpilModelInputsAsEditingFormInputs = function(){
     this.config.models.forEach(model => {
       model.inputs.forEach(input => {
         input.visible = true; // set visibility of input
+        // implement validate object
         input.validate = {
           empty: true,
           message: null,
@@ -43,6 +47,7 @@ function Service(){
           _valid: false,
           ...input.validate
         }
+        //set get default value
         input.get_default_value = true;
       })
     })
@@ -56,19 +61,21 @@ function Service(){
    */
   this.getFieldsFromLayer = function(layerId, options) {
     return this.project.getLayerById(layerId).getFields().filter(field => {
-      if (options.datatype === 'any') return true;
-      else if (options.datatype === 'string') {
-        return true
+      switch (options.datatype) {
+        case 'any':
+          return true;
+        case 'string':
+          return true //@TODO
+        case 'numeric':
+          return true //@TODO
+        case 'datetime':
+          return true // @TODO
       }
-
-    }).map(field => ({
-      key: field.label,
-      value: field.name
-    }))
+    }).map(field => ({key: field.label, value: field.name}));
   }
 
   /**
-   *
+   * Method that emit change selected feature when a layer feature selection change
    */
   this.emitChangeSelectedFeatures = function(){
     self.emit('change-selected-features');
@@ -80,10 +87,12 @@ function Service(){
    * @returns {*}
    */
   this.getLayerSelectedFeaturesIds = function(layerId){
-    return this.mapService.defaultsLayers.selectionLayer
+    return this.mapService
+      .defaultsLayers.selectionLayer
       .getSource()
       .getFeatures()
-      .filter(feature => feature.__layerId === layerId).map(feature => feature.getId());
+      .filter(feature => feature.__layerId === layerId)
+      .map(feature => feature.getId());
   }
 
   /**
@@ -150,6 +159,7 @@ function Service(){
         }
 
         if (
+          (null !== layer.geometrytype) &&
           ("undefined" !== typeof layer.geometrytype) &&
           ("NoGeometry" !== layer.geometrytype)
         ) {
@@ -162,7 +172,6 @@ function Service(){
             })
 
           } else {
-
             //get geometry_types only from data_types array
             const geometry_types = datatypes
               .filter(data_type => ['point', 'line', 'polygon'].indexOf(data_type) !== -1)
@@ -176,7 +185,6 @@ function Service(){
                     return 'Polygon';
                 }
               });
-
             if (geometry_types.length > 0) {
               if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometrytype))) {
                 layers.push({
