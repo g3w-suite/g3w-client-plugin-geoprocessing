@@ -67,7 +67,7 @@ export default {
     'value': {
       handler(value) {
         if (true === this.isSelectedFeatures) {
-          this.setDisabledSelectFeturesCheckbox(value);
+          this.setDisabledSelectFeaturesCheckbox(value);
         }
         this.state.value = value;
         this.$emit('changeinput', this.state);
@@ -84,7 +84,7 @@ export default {
      * @TODO
      * @param layerId
      */
-    setDisabledSelectFeturesCheckbox(layerId){
+    setDisabledSelectFeaturesCheckbox(layerId){
       this.selected_features_disabled = Service.getLayerSelectedFeaturesIds(layerId).length === 0;
       //in case go disabled, uncheck checkbox
       if (true === this.selected_features_disabled) {
@@ -105,7 +105,7 @@ export default {
       this.$emit('changeinput', this.state);
     },
     changeSelectedFeaturesEventHandler(){
-      this.setDisabledSelectFeturesCheckbox(this.value);
+      this.setDisabledSelectFeaturesCheckbox(this.value);
       this.setInputValueFromSelectedFeatures(this.selected_features_checked);
     }
   },
