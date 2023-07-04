@@ -83,18 +83,24 @@ export default {
     //listen change of value (input select)
     'value': {
       handler(value) {
+        // in case of multiple selection
         if (this.state.input.options.multiple) {
+          //set input value as values separate by comma
           this.state.value = value.join(',');
+          //check if is required
           if (true === this.state.validate.required) {
+            //need to check validation
             this.state.validate.valid = value.length > 0;
           }
         } else {
+          //case single value
           this.state.value = value;
-          if (this.state.validate.required) {
+          // in case of required input
+          if (true === this.state.validate.required) {
             this.state.validate.valid = "" !== value || null !== value;
           }
         }
-
+        //emit change input
         this.$emit('changeinput', this.state);
       },
       immediate: true
@@ -102,7 +108,12 @@ export default {
   },
 
   methods: {
-
+      /**
+       * Get all fields by layers
+       * @param layerId
+       * @param options
+       * @returns {*}
+       */
     getFieldsFromLayer(layerId, options={}){
       return Service.getFieldsFromLayer(layerId, options);
     },
@@ -126,23 +137,28 @@ export default {
             this.value = null
           }
           this.select2.val(null).trigger('change');
+        } else {
+          // check if need to set all values of a layer
+          if (true === this.state.input.options.default_to_all_fields) {
+            //set value (array)
+            this.value = this.state.input.options.values.map(({value}) => value);
+          }
         }
-
       }
     })
 
-    this.state.validate.valid = true;
     if (this.state.validate.required) {
+      this.state.validate.valid = false;
       this.state.validate.message = `qprocessing.inputs.fieldchooser.validate.message.${this.state.input.options.multiple ? 'multiple' : 'single'}`
+    } else {
+      this.state.validate.valid = true;
     }
-
   },
 
   async mounted() {
     await this.$nextTick();
     this.select2 = $(this.$refs.select);
     this.$emit('addinput', this.state);
-    this.state.validate.valid = false;
   },
 
   beforeDestroy(){}
