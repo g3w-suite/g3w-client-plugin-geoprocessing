@@ -43,11 +43,14 @@
 
     <section class="qprocess-model-footer">
       <div>
-        <progressbar :progress="state.progress"/>
+        <progressbar v-if="state.progress" :progress="state.progress"/>
+        <template v-else>
+            <bar-loader :loading="state.loading"/>
+        </template>
         <button
             class="btn skin-background-color run"
             @click.stop="run"
-            :disabled="!valid">
+            :disabled="!valid || state.loading">
           <i :class="g3wtemplate.font['run']"></i>
         </button>
       </div>
@@ -110,7 +113,8 @@ export default {
      * @returns {Promise<void>}
      */
     async run(){
-      this.loading = true;
+      this.state.loading = true;
+      await this.$nextTick();
       try {
         this.task = await Service.runModel({
           model: this.model,
@@ -120,7 +124,8 @@ export default {
         console.log(err)
       }
 
-      this.loading = false;
+      this.state.loading = false;
+
     }
   },
   created(){
