@@ -2,7 +2,7 @@
   <div class="qprocessing-model">
 
     <section class="qprocessing-model-header">
-      <div class="title skin-color">{{model.display_name.toUpperCase()}}</div>
+      <div class="skin-color">{{model.display_name.toUpperCase()}}</div>
     </section>
 
     <section class="qprocessing-model-inputs">
@@ -97,9 +97,12 @@ export default {
      * @param input
      */
     async _changeInput(input) {
+      //need to wait change value dom
+      await this.$nextTick();
       if (Array.isArray(this.subscribe_change_input[input.name])) {
         this.subscribe_change_input[input.name].forEach(handler => handler(input.value))
       }
+      //call base changeInput method
       this.changeInput(input);
     },
     /**
@@ -129,8 +132,11 @@ export default {
 </script>
 
 <style scoped>
+  .qprocessing-model-header{
+    font-size: 1.3em;
+    font-weight: bold;
+  }
   .title {
-    font-size: 1.5em;
     font-weight: bold;
     margin-bottom: 5px;
   }

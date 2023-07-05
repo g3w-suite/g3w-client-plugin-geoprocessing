@@ -9,9 +9,10 @@
       <slot name="body">
         <select v-select2="'value'" :id="state.name" ref="select" style="width:100%;"  class="form-control">
           <option
-             v-for="value in state.input.options.values"
-             :key="value.value"
-            :value="value.value">{{ value.key }}</option>
+           v-for="value in state.input.options.values"
+           :key="value.value"
+          :value="value.value">{{ value.key }}
+          </option>
         </select>
         <div class="prjvectorlayerfeature-only-selected-features" v-if="isSelectedFeatures" v-disabled="selected_features_disabled">
           <input style="width:100%;"
@@ -23,10 +24,9 @@
           </div>
 
       </slot>
-
       <slot name="message">
-          <p v-if="notvalid" class="g3w-long-text error-input-message" style="margin: 0" v-html="state.validate.message"></p>
-          <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
+        <p v-if="notvalid" class="g3w-long-text error-input-message" style="margin: 0" v-html="state.validate.message"></p>
+        <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
       </slot>
       <div class="g3w_input_help skin-background-color extralighten" v-if="state.help && this.state.help.visible" v-html="state.help.message">
       </div>
@@ -64,15 +64,12 @@ export default {
   },
   watch: {
     //listen change of value (input select)
-    'value': {
-      handler(value) {
-        if (true === this.isSelectedFeatures) {
-          this.setDisabledSelectFeaturesCheckbox(value);
-        }
-        this.state.value = value;
-        this.$emit('changeinput', this.state);
-      },
-      immediate: true
+    'value'(value) {
+      if (true === this.isSelectedFeatures) {
+        this.setDisabledSelectFeaturesCheckbox(value);
+      }
+      this.state.value = value;
+      this.$emit('changeinput', this.state);
     },
     //Listen selected feature checkbox event change
     'selected_features_checked'(checked) {

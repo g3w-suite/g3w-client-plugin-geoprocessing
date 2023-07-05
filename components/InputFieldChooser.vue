@@ -17,7 +17,7 @@
           ref="select"
           style="width:100%;"
           class="form-control">
-          <option v-if="state.validate.required && !state.input.options.multiple" :value="null"></option>
+          <option v-if="state.validate.required && !state.input.options.multiple" :value="null">---</option>
           <option v-for="value in state.input.options.values"
             :selected="state.input.options.default_to_all_fields"
             :key="value.value"
@@ -27,7 +27,6 @@
       </slot>
 
       <slot name="message">
-
         <p v-if="notvalid"
           class="g3w-long-text error-input-message"
           style="margin: 0"
@@ -81,39 +80,36 @@ export default {
 
   watch: {
     //listen change of value (input select)
-    'value': {
-      handler(value) {
-        // in case of multiple selection
-        if (this.state.input.options.multiple) {
-          //set input value as values separate by comma
-          this.state.value = value.join(',');
-          //check if is required
-          if (true === this.state.validate.required) {
-            //need to check validation
-            this.state.validate.valid = value.length > 0;
-          }
-        } else {
-          //case single value
-          this.state.value = value;
-          // in case of required input
-          if (true === this.state.validate.required) {
-            this.state.validate.valid = "" !== value || null !== value;
-          }
+    'value'(value) {
+      // in case of multiple selection
+      if (this.state.input.options.multiple) {
+        //set input value as values separate by comma
+        this.state.value = value.join(',');
+        //check if is required
+        if (true === this.state.validate.required) {
+          //need to check validation
+          this.state.validate.valid = value.length > 0;
         }
-        //emit change input
-        this.$emit('changeinput', this.state);
-      },
-      immediate: true
+      } else {
+        //case single value
+        this.state.value = value;
+        // in case of required input value
+        if (true === this.state.validate.required) {
+          this.state.validate.valid = "" !== value && null !== value;
+        }
+      }
+      //emit change input
+      this.$emit('changeinput', this.state);
     },
   },
 
   methods: {
-      /**
-       * Get all fields by layers
-       * @param layerId
-       * @param options
-       * @returns {*}
-       */
+    /**
+     * Get all fields by layers
+     * @param layerId
+     * @param options
+     * @returns {*}
+     */
     getFieldsFromLayer(layerId, options={}){
       return Service.getFieldsFromLayer(layerId, options);
     },
@@ -124,40 +120,42 @@ export default {
   },
 
   created() {
+    //set it true at beginning to reactivity
+    this.state.validate.valid = true;
+  },
+
+  async mounted() {
+    //if required we set message of not valid input
+    if (this.state.validate.required) {
+      this.state.validate.message = `qprocessing.inputs.fieldchooser.validate.message.${this.state.input.options.multiple ? 'multiple' : 'single'}`
+    }
+
+    await this.$nextTick();
+    //set this.select2 element
+    this.select2 = $(this.$refs.select);
+
+    //emit register change input to listen parent input layer value and get related fields
     this.$emit('register-change-input', {
       inputName: this.state.input.options.parent_field,
       handler: (layerId) => {
+        //set values from Input layer fields
         this.state.input.options.values = this.getFieldsFromLayer(layerId, {
-          datatype: this.state.input.options.datatype
+            datatype: this.state.input.options.datatype,
         })
-        if ("undefined" !== typeof this.select2) {
-          if (this.state.input.options.multiple){
-            this.value = [];
-          } else {
-            this.value = null
-          }
+        //check if multiple
+        if (this.state.input.options.multiple) {
+          //value is set checking if default_all_fields is true, set all options values by defaults, otherwise empty array
+          this.value = this.state.input.options.default_to_all_fields ? this.state.input.options.values.map(({value}) => value) : [];
+        }
+        // in case of no value or values set value to null
+        if (this.value === null || (Array.isArray(this.value) && this.value.length === 0)) {
           this.select2.val(null).trigger('change');
-        } else {
-          // check if need to set all values of a layer
-          if (true === this.state.input.options.default_to_all_fields) {
-            //set value (array)
-            this.value = this.state.input.options.values.map(({value}) => value);
-          }
         }
       }
     })
 
-    if (this.state.validate.required) {
-      this.state.validate.valid = false;
-      this.state.validate.message = `qprocessing.inputs.fieldchooser.validate.message.${this.state.input.options.multiple ? 'multiple' : 'single'}`
-    } else {
-      this.state.validate.valid = true;
-    }
-  },
-
-  async mounted() {
-    await this.$nextTick();
-    this.select2 = $(this.$refs.select);
+    this.state.validate.valid = !this.state.validate.required;
+    //emit add input
     this.$emit('addinput', this.state);
   },
 
