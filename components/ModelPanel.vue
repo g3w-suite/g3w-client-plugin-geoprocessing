@@ -53,6 +53,13 @@
             :disabled="!valid || state.loading">
           <i :class="g3wtemplate.font['run']"></i>
         </button>
+        <div v-if="state.message.show">
+           <span
+            class="message"
+            :style="{color: getMessageColor()}"
+             v-t-plugin="`qprocessing.run.messages.${state.message.type}`">
+           </span>
+        </div>
       </div>
     </section>
   </div>
@@ -81,12 +88,25 @@ export default {
       state: {
         loading: false,
         progress: null,
+        message: {
+          type: 'success', // error info
+          show: false
+        }
       },
       tovalidate: [],
       task: null
     }
   },
   methods: {
+    getMessageColor(){
+      switch(this.state.message.type){
+        case 'success':
+          return 'green';
+        case 'error':
+          return 'red';
+      }
+    },
+
     registerChangeInputEvent({inputName, handler}={}) {
 
       if ("undefined" === typeof this.subscribe_change_input[inputName]) {
@@ -114,17 +134,22 @@ export default {
      */
     async run(){
       this.state.loading = true;
+      this.state.message.show = false;
       await this.$nextTick();
       try {
         this.task = await Service.runModel({
           model: this.model,
           state: this.state
         });
+        this.state.message.type = 'success';
       } catch(err){
-        console.log(err)
+        console.log(err);
+        this.state.message.type = 'error';
+
       }
 
       this.state.loading = false;
+      this.state.message.show = true;
 
     }
   },
@@ -157,4 +182,9 @@ export default {
   .qprocess-model-footer {
     margin-top: 10px;
   }
+
+  .qprocess-model-footer .message {
+    font-weight: bold;
+  }
+
 </style>

@@ -16,5 +16,11 @@ export default {
     outputvector: {
       open_file_on_map: "Open output file after running algorithm"
     }
+  },
+  run :{
+    messages: {
+      success: "Model run successfully",
+      error: "An Error occur on model"
+    }
   }
 }

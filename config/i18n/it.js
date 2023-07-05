@@ -16,5 +16,11 @@ export default {
     outputvector: {
       open_file_on_map: "Apri il file sulla mappa"
     }
+  },
+  run :{
+    messages: {
+      success: "Modello eseguito con successo",
+      error: "Errore durante l'esecuzione del modello"
+    }
   }
 }
