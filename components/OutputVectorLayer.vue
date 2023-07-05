@@ -20,7 +20,7 @@
 <script>
 
 const {GUI} = g3wsdk.gui;
-const {downloadFile, uniqueId} = g3wsdk.core.utils;
+const {downloadFile, uniqueId, getRandomColor} = g3wsdk.core.utils;
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = g3wsdk.core.geoutils;
 export default {
   name: "OutputVectorLayer",
@@ -89,7 +89,7 @@ export default {
              type
            });
            layer.setStyle(createStyleFunctionToVectorLayer({
-             color: 'blue'
+             color: getRandomColor()
            }));
            GUI.getService('map').addExternalLayer(layer, {
              type,
