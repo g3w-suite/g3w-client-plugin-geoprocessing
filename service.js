@@ -1,5 +1,5 @@
 const {
-  utils: {base, inherit},
+  utils: {base, inherit, XHR},
   geoutils: {isSameBaseGeometryType},
   plugin:{PluginService}} = g3wsdk.core;
 const {ProjectsRegistry} = g3wsdk.core.project;
@@ -23,6 +23,9 @@ function Service(){
 
     // get current project
     this.project = ProjectsRegistry.getCurrentProject();
+
+    //store layer fields base on layerId and datatype
+    this.layerFields = {};
 
     // manage and adapt model inputs with all input editing attributes needed
     this.transpilModelInputsAsEditingFormInputs();
@@ -57,21 +60,26 @@ function Service(){
    * Method to extract fields from project layerId based on options
    *
    * @param layerId
-   * @param options
+   * @param options: <Object> datatype
    */
-  this.getFieldsFromLayer = function(layerId, options) {
-    return this.project.getLayerById(layerId).getFields().filter(field => {
-      switch (options.datatype) {
-        case 'any':
-          return true;
-        case 'string':
-          return true //@TODO
-        case 'numeric':
-          return true //@TODO
-        case 'datetime':
-          return true // @TODO
+  this.getFieldsFromLayer = async function(layerId, params={}) {
+    if ("undefined" === typeof this.layerFields[layerId]) {
+      this.layerFields[layerId] = {};
+    }
+    if ("undefined" === typeof this.layerFields[layerId][JSON.stringify(params)]) {
+      try {
+        const response = await XHR.get({
+          url: `${this.config.urls.fields}${this.project.getId()}/${layerId}/`,
+          params
+        });
+        if (true === response.result) {
+          this.layerFields[layerId][JSON.stringify(params)] = response.fields;
+        }
+      } catch(err) {
       }
-    }).map(field => ({key: field.label, value: field.name}));
+    }
+    return this.layerFields[layerId][JSON.stringify(params)];
+
   }
 
   /**

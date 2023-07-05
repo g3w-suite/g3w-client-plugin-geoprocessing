@@ -9,8 +9,8 @@
     </slot>
 
     <div class="col-sm-12">
-
       <slot name="body">
+        <bar-loader :loading="loading"/>
         <select v-select2="'value'"
           :multiple="state.input.options.multiple"
           :id="state.name"
@@ -68,6 +68,7 @@ export default {
 
   data() {
     return {
+      loading: false,
       value: this.state.input.options.multiple ? [] : null,
     }
   },
@@ -110,8 +111,11 @@ export default {
      * @param options
      * @returns {*}
      */
-    getFieldsFromLayer(layerId, options={}){
-      return Service.getFieldsFromLayer(layerId, options);
+    async getFieldsFromLayer(layerId, options={}){
+      this.loading = true;
+      const fields = await Service.getFieldsFromLayer(layerId, options);
+      this.loading = false;
+      return fields;
     },
 
     changeSelectedFeaturesEventHandler(){
@@ -137,9 +141,9 @@ export default {
     //emit register change input to listen parent input layer value and get related fields
     this.$emit('register-change-input', {
       inputName: this.state.input.options.parent_field,
-      handler: (layerId) => {
+      handler: async (layerId) => {
         //set values from Input layer fields
-        this.state.input.options.values = this.getFieldsFromLayer(layerId, {
+        this.state.input.options.values = await this.getFieldsFromLayer(layerId, {
             datatype: this.state.input.options.datatype,
         })
         //check if multiple
