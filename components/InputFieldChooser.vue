@@ -150,6 +150,8 @@ export default {
         if (this.state.input.options.multiple) {
           //value is set checking if default_all_fields is true, set all options values by defaults, otherwise empty array
           this.value = this.state.input.options.default_to_all_fields ? this.state.input.options.values.map(({value}) => value) : [];
+        } else {
+          this.value = null;
         }
         // in case of no value or values set value to null
         if (this.value === null || (Array.isArray(this.value) && this.value.length === 0)) {

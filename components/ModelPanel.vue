@@ -156,7 +156,15 @@ export default {
   created(){
     this.subscribe_change_input = {};
   },
-  async mounted() {},
+  async mounted() {
+    await this.$nextTick();
+    //@TODO
+    $('.qprocessing-model-inputs input').keypress((event) => {
+      if (event.which === 13) {
+        event.preventDefault();
+      }
+    });
+  },
   async beforeDestroy(){}
 }
 </script>
