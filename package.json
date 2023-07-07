@@ -1,6 +1,6 @@
 {
   "name": "qprocessing",
-  "version": "1.0.0",
+  "version": "1.0.1-beta.0",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/g3w-suite/g3w-client-plugin-processing/#readme",
   "browserslist": "defaults",
-  "engines" : {
-    "node" : ">=16.13.2",
+  "engines": {
+    "node": ">=16.13.2",
     "npm": ">=8.1.2"
   }
 }
