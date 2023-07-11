@@ -142,6 +142,8 @@ export default {
     this.$emit('register-change-input', {
       inputName: this.state.input.options.parent_field,
       handler: async (layerId) => {
+        //in case of change parent value change, in case of selectefeature need to get only layerId without featuresid
+        layerId = layerId.split(':')[0];
         //set values from Input layer fields
         this.state.input.options.values = await this.getFieldsFromLayer(layerId, {
             datatype: this.state.input.options.datatype,
