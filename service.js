@@ -1,7 +1,8 @@
 const {
-  utils: {base, inherit, XHR},
+  utils: {base, inherit, XHR, downloadFile},
   geoutils: {isSameBaseGeometryType},
   plugin:{PluginService}} = g3wsdk.core;
+
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
@@ -34,7 +35,7 @@ function Service(){
   };
 
   /**
-   * Method to trasform/trasnpile model inputs with the same attributes needed by editing inputs
+   * Method to transform/transpile model inputs with the same attributes needed by editing inputs
    */
   this.transpilModelInputsAsEditingFormInputs = function(){
     this.config.models.forEach(model => {
@@ -208,6 +209,26 @@ function Service(){
   };
 
   /**
+   * Get all Project Vector Layers that has geometry types
+   * @param datatypes <Array> of String
+   *   'nogeometry',
+   *   'point',
+   *   'line',
+   *   'polygon',
+   *   'anygeometry'
+   * return <Array>
+   */
+  this.getInputPrjRasterLayerData = function(){
+    return this.project.getLayers()
+      //exclude base layer
+      .filter(layer => !layer.baselayer && ("undefined" !== typeof layer.source && layer.source.type === 'gdal'))
+      .map(layer => ({
+        key: layer.name,
+        value: layer.id
+      }))
+  };
+
+  /**
    * Method to run model
    * @param model
    * @returns {Promise<unknown>}
@@ -222,18 +243,24 @@ function Service(){
        * @param response
        */
       const listener = ({task_id, timeout, response}) => {
-        const {result, progress, task_result, status} = response;
+        const {result, progress, task_result, status, exception} = response;
         // in case of complete
         if (status === 'complete') {
           TaskService.stopTask({
             task_id
           });
           timeoutprogressintervall = null;
-          resolve({
-            result,
-            task_result,
-          });
-        } else if (status === 'executing') {
+          if (null === task_result) {
+            reject({})
+          } else {
+            resolve({
+              result,
+              task_result,
+            });
+          }
+
+        }
+        else if (status === 'executing') {
           if (state.progress === null || state.progress === undefined) {
             timeoutprogressintervall = Date.now();
           } else {
@@ -257,23 +284,46 @@ function Service(){
             }
           }
           state.progress = progress;
-        } else if ( status === '500' || status === 500) {
-          const {status, exception} = response.responseJSON || {};
-          const statusError = status === 'error';
-          state.progress = null;
-          timeoutprogressintervall = null;
-          TaskService.stopTask({
-            task_id
-          });
-          GUI.showUserMessage({
-            type: 'alert',
-            message: statusError ? exception : 'server_error',
-            textMessage: statusError
-          });
-          reject({
-            statusError,
-            timeout: false
-          })
+        }
+        else {
+          let statusError = false;
+          let textMessage = false;
+          let message;
+          switch(status) {
+            case '500':
+            case 500:
+              message = (response.responseJSON && response.responseJSON.exception) || 'server_error';
+              textMessage = "undefined" !== typeof exception;
+              statusError = true;
+              break;
+            case 'error':
+              message = exception;
+              textMessage = true;
+              statusError = true;
+              break;
+          }
+
+          // in case of status error
+          if (statusError) {
+            state.progress = null;
+            timeoutprogressintervall = null;
+
+            TaskService.stopTask({
+              task_id
+            });
+
+
+            GUI.showUserMessage({
+              type: 'alert',
+              message,
+              textMessage
+            });
+
+            reject({
+              statusError:true,
+              timeout: false
+            })
+          }
         }
       };
       const data = {

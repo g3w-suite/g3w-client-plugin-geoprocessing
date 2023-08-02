@@ -20,7 +20,7 @@
 <script>
 
 const {GUI} = g3wsdk.gui;
-const {downloadFile, uniqueId, getRandomColor} = g3wsdk.core.utils;
+const { uniqueId, getRandomColor} = g3wsdk.core.utils;
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = g3wsdk.core.geoutils;
 export default {
   name: "OutputVectorLayer",
@@ -51,6 +51,7 @@ export default {
     },
     async task(response={}){
      const {task_result={}} = response;
+     //get value from name of the output
      const fileUrl = task_result[this.state.name];
      //add to map
      if (this.checked) {
@@ -60,7 +61,6 @@ export default {
        await fetch(fileUrl).then(async response => {
          try {
            name = response.headers.get("content-disposition").split('filename=')[1].replace(/"/g,'');
-           console.log(name)
          } catch(err){
            name = `${uniqueId()}_${this.type}`;
          }
@@ -98,16 +98,12 @@ export default {
        });
 
      } else { // download
-      downloadFile({url: fileUrl})
+      this.$emit('add-result-to-model-results', {
+        output: this.state,
+        result: task_result
+      })
      }
     }
   },
-  async mounted(){
-    await this.$nextTick();
-  }
 }
 </script>
-
-<style scoped>
-
-</style>

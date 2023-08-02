@@ -14,6 +14,7 @@
           :value="value.value">{{ value.key }}
           </option>
         </select>
+
         <div class="prjvectorlayerfeature-only-selected-features" v-if="isSelectedFeatures" v-disabled="selected_features_disabled">
           <input style="width:100%;"
             class="magic-checkbox"
@@ -21,14 +22,14 @@
             type="checkbox"
             :id="`${state.name}_checkbox`">
           <label style="margin-top: 10px;" :for="`${state.name}_checkbox`" v-t-plugin="'qprocessing.inputs.prjvectorlayerfeature.selected_features'"></label>
-          </div>
+        </div>
 
       </slot>
       <slot name="message">
         <p v-if="notvalid" class="g3w-long-text error-input-message" style="margin: 0" v-html="state.validate.message"></p>
         <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
       </slot>
-      <div class="g3w_input_help skin-background-color extralighten" v-if="state.help && this.state.help.visible" v-html="state.help.message">
+      <div v-if="state.help && this.state.help.visible" class="g3w_input_help skin-background-color extralighten"  v-html="state.help.message">
       </div>
     </div>
   </div>

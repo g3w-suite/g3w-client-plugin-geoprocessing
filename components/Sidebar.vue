@@ -8,13 +8,13 @@
 </template>
 
 <script>
-import ModelPanel from '../modepanel';
+import ModelPanel from '../modelpanel';
 import Service from '../service';
 export default {
   name: "qprocessing-sidebar",
-  data(){
+  data() {
     return {
-      models: Service.config.models
+      models: []
     };
   },
   methods:{
@@ -23,7 +23,13 @@ export default {
       panel.show();
     }
   },
-  created() {}
+  created() {
+    Service.config.models.forEach(model => {
+        console.log(model);
+        this.models.push(model)
+    })
+    //this.models.forEach(model => Vue.set(model, 'result', model.results))
+  }
 }
 </script>
 

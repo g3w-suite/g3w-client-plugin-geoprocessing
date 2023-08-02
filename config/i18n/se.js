@@ -1,4 +1,5 @@
 export default {
+  title: 'Geoprocessing',
   inputs: {
     prjvectorlayerfeature: {
       selected_features: "Only selected features"

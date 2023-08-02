@@ -1,6 +1,7 @@
 import pluginConfig from './config';
 import Service from "./service";
 import SidebarComponent from './components/Sidebar.vue';
+
 const {base, inherit} = g3wsdk.core.utils;
 const {Plugin: BasePlugin} = g3wsdk.core.plugin;
 const {GUI} = g3wsdk.gui;
@@ -14,7 +15,9 @@ const Plugin = function() {
     service: Service
   });
 
+
   if (this.registerPlugin(this.config.gid)) {
+
     // Show loading plugin icon
     this.setHookLoading({ loading: true });
 
@@ -28,19 +31,20 @@ const Plugin = function() {
       this.setReady(true);
     });
 
-    //initialize service
+
     this.service.init(this.config);
+
+
   }
 
     /**
      * Add a custom button on left sidebar (g3w-client)
      */
     this.setupGui = function() {
-
       this.createSideBarComponent(SidebarComponent,
         {
           id: pluginConfig.name,
-          title: 'Geoprocessing',
+          title: `plugins.${pluginConfig.name}.title`,
           collapsible: true,
           open: false,
           isolate: false,
