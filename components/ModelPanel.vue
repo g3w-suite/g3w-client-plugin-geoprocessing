@@ -145,11 +145,8 @@ export default {
             urls: [result[output.name]]
           })
         }
-
+        this.newResults = true;
       }
-    },
-    removeResultFromModel(){
-
     },
     getMessageColor(){
       switch(this.state.message.type){
@@ -207,15 +204,6 @@ export default {
       const resultspanel = new ModelResults({model: this.model});
       resultspanel.show();
       this.newResults = false;
-    }
-  },
-  watch: {
-    'model.results'(results, oldresults) {
-      if (oldresults.length > 0) {
-        if (results.length > oldresults.length) {
-          this.newResults = true;
-        }
-      }
     }
   },
   created(){

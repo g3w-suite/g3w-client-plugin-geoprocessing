@@ -14,7 +14,7 @@ export default {
   name: "qprocessing-sidebar",
   data() {
     return {
-      models: []
+      models: Service.config.models
     };
   },
   methods:{
@@ -23,13 +23,6 @@ export default {
       panel.show();
     }
   },
-  created() {
-    Service.config.models.forEach(model => {
-        console.log(model);
-        this.models.push(model)
-    })
-    //this.models.forEach(model => Vue.set(model, 'result', model.results))
-  }
 }
 </script>
 
