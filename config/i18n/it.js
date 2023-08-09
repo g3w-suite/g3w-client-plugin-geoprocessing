@@ -23,5 +23,10 @@ export default {
       success: "Modello eseguito con successo",
       error: "Errore durante l'esecuzione del modello"
     }
+  },
+  draw_types: {
+    'Polygon': "Poligono",
+    'Circle': "Cerchio",
+    'Point': "Punto",
   }
 }

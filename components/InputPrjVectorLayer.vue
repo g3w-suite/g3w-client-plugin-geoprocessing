@@ -6,12 +6,21 @@
       </label>
     </slot>
     <div class="col-sm-12">
+      <section class="vector-tools-context" v-if="showUploadFile">
+          <section class="vector-tools">
+            <upload-vector-file  @add-layer="addLayer"/>
+            <draw-input-vector-features :datatypes="state.input.options.datatypes" @add-layer="addLayer"/>
+          </section>
+          <section class="vector-tools-message">
+            <div> Messaggio </div>
+          </section>
+      </section>
       <slot name="body">
         <select v-select2="'value'" :id="state.name" ref="select" style="width:100%;"  class="form-control">
           <option
            v-for="value in state.input.options.values"
            :key="value.value"
-          :value="value.value">{{ value.key }}
+           :value="value.value">{{ value.key }}
           </option>
         </select>
 
@@ -36,13 +45,25 @@
 </template>
 
 <script>
+
+import UploadVectorFile from "./UploadVectorFile.vue";
+import DrawInputVectorFeatures from "./DrawInputVectorFeatures.vue";
+
 import Service from '../service';
 const { selectMixin } = g3wsdk.gui.vue.Mixins;
 
 export default {
   name: "InputPrjVectorLayer",
   mixins: [selectMixin],
+  components: {
+    UploadVectorFile,
+    DrawInputVectorFeatures,
+  },
   props: {
+      modelId: {
+      type: String,
+      required: true,
+    },
     state: {
       type: Object,
       required: true
@@ -56,6 +77,15 @@ export default {
     }
   },
   computed: {
+    /**
+     * Check if datatypes contain geometries values
+     * @returns Boolean
+     */
+    showUploadFile(){
+      return !!this.state.input.options.datatypes.find(datatype => {
+        return (datatype === 'anygeometry') || (['point', 'line', 'polygon'].indexOf(datatype) !== -1);
+      });
+    },
     isSelectedFeatures(){
       return this.state.input.type === 'prjvectorlayerfeature';
     },
@@ -63,7 +93,58 @@ export default {
       return this.state.validate.valid === false;
     }
   },
-  watch: {
+    methods: {
+    /*
+    *
+    * */
+     async addLayer(file){
+       try {
+         const {key, value} = await Service.uploadFile({
+           file,
+           inputName: this.state.name,
+           modelId: this.modelId,
+         });
+         this.state.input.options.values.push({
+           key,
+           value
+         });
+         await this.$nextTick();
+         this.value = value;
+       } catch(err){
+         console.log(err)
+       }
+     },
+      /**
+       * @TODO
+       * @param layerId
+       */
+      setDisabledSelectFeaturesCheckbox(layerId){
+          this.selected_features_disabled = Service.getLayerSelectedFeaturesIds(layerId).length === 0;
+          //in case go disabled, uncheck checkbox
+          if (true === this.selected_features_disabled) {
+              this.selected_features_checked = false;
+          }
+      },
+      /**
+       *Set input layer value based on selected feature id or not
+       * @param checked
+       */
+      setInputValueFromSelectedFeatures(checked) {
+          const currentLayerFeatureSelectedIds = Service.getLayerSelectedFeaturesIds(this.value);
+          if (true === checked && currentLayerFeatureSelectedIds.length > 0) {
+              this.state.value = `${this.value}:${currentLayerFeatureSelectedIds.join(',')}`
+          } else {
+              this.state.value = this.value;
+          }
+          this.$emit('changeinput', this.state);
+      },
+      changeSelectedFeaturesEventHandler(){
+          this.setDisabledSelectFeaturesCheckbox(this.value);
+          this.setInputValueFromSelectedFeatures(this.selected_features_checked);
+      }
+    },
+
+    watch: {
     //listen change of value (input select)
     'value'(value) {
       if (true === this.isSelectedFeatures) {
@@ -75,36 +156,6 @@ export default {
     //Listen selected feature checkbox event change
     'selected_features_checked'(checked) {
       this.setInputValueFromSelectedFeatures(checked);
-    }
-  },
-  methods: {
-    /**
-     * @TODO
-     * @param layerId
-     */
-    setDisabledSelectFeaturesCheckbox(layerId){
-      this.selected_features_disabled = Service.getLayerSelectedFeaturesIds(layerId).length === 0;
-      //in case go disabled, uncheck checkbox
-      if (true === this.selected_features_disabled) {
-        this.selected_features_checked = false;
-      }
-    },
-    /**
-     *Set input layer value based on selected feature id or not
-     * @param checked
-     */
-    setInputValueFromSelectedFeatures(checked) {
-      const currentLayerFeatureSelectedIds = Service.getLayerSelectedFeaturesIds(this.value);
-      if (true === checked && currentLayerFeatureSelectedIds.length > 0) {
-        this.state.value = `${this.value}:${currentLayerFeatureSelectedIds.join(',')}`
-      } else {
-        this.state.value = this.value;
-      }
-      this.$emit('changeinput', this.state);
-    },
-    changeSelectedFeaturesEventHandler(){
-      this.setDisabledSelectFeaturesCheckbox(this.value);
-      this.setInputValueFromSelectedFeatures(this.selected_features_checked);
     }
   },
   created() {
@@ -122,14 +173,11 @@ export default {
       Service.registersSelectedFeatureLayersEvent();
       Service.on('change-selected-features', this.changeSelectedFeaturesEventHandler.bind(this));
     }
-
-
   },
   async mounted(){
     await this.$nextTick();
     this.select2 = $(this.$refs.select);
     this.$emit('addinput', this.state);
-
   },
   beforeDestroy(){
     if (true === this.isSelectedFeatures) {
@@ -146,5 +194,17 @@ export default {
     text-align: left !important;
     padding-top: 0 !important;
     margin-bottom: 3px;
+  }
+  .vector-tools-context {
+    margin-bottom: 5px;
+  }
+
+  .vector-tools {
+    display: flex;
+    justify-content: space-between;
+  }
+  .vector-tools-message {
+    margin: 3px;
+    display: none;
   }
 </style>

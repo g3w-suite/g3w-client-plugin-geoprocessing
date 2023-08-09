@@ -23,5 +23,10 @@ export default {
       success: "Model run successfully",
       error: "An Error occur on model"
     }
+  },
+  draw_types: {
+    'Polygon': "Polygon",
+    'Circle': "Circle",
+    'Point': "Point",
   }
 }

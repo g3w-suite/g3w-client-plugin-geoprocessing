@@ -183,7 +183,7 @@ function Service(){
           } else {
             //get geometry_types only from data_types array
             const geometry_types = datatypes
-              .filter(data_type => ['point', 'line', 'polygon'].indexOf(data_type) !== -1)
+              .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
               .map(geometry_type => {
                 switch (geometry_type){
                   case 'point':
@@ -358,6 +358,39 @@ function Service(){
    * @param layer
    */
   this.addOutputVectorLayer = function(layer){}
+
+  /*
+  * Upload file
+   */
+  this.uploadFile = async function({modelId, inputName, file}){
+    const data = new FormData();
+    data.append('file', file);
+    try {
+      const response = await fetch(`${this.config.urls.upload}${modelId}/${this.project.getId()}/${inputName}/`, {
+        method: 'POST',
+        body: data,
+      });
+      const responseJson = await response.json();
+      if (responseJson.result) {
+        return {
+          key: file.name,
+          value: `file:${responseJson.data.file}`
+        }
+      }
+
+    } catch(err) {
+      throw new Error(err);
+    }
+
+  };
+
+  /**
+   *
+   * @param geojson
+   */
+  this.createGeoJSONFile = function(geojson){
+    console.log(geojson)
+  }
 }
 
 inherit(Service, PluginService);

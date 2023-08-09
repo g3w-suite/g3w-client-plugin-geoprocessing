@@ -14,6 +14,7 @@
         <div class="box-primary">
           <div class="box-body">
             <component
+              :modelId="model.id"
               @register-change-input="registerChangeInputEvent"
               @addinput="addToValidate"
               @changeinput="_changeInput(input)"
