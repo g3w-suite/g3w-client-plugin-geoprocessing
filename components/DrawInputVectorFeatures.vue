@@ -11,6 +11,7 @@
 import Service from "../service";
 
 const {GUI} = g3wsdk.gui;
+const {tPlugin} = g3wsdk.core.i18n;
 
 const DRAW_GEOMETRY_TYPES = {
   point: 'Point',
@@ -150,7 +151,7 @@ export default {
                   //crate file
                   const file = Service.createGeoJSONFileFromOLFeatures({
                     features,
-                    name: `${type}_${Date.now()}`
+                    name: `${tPlugin('qprocessing.draw_filename')}(${tPlugin('qprocessing.draw_types.'+type)})`
                   });
                   //emit event
                   this.$emit('add-layer', {

@@ -28,5 +28,7 @@ export default {
     'Polygon': "Polygon",
     'LineString': "Line",
     'Point': "Point",
-  }
+  },
+  draw_filename: 'Draw layer',
+
 }

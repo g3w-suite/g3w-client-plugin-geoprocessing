@@ -28,5 +28,6 @@ export default {
     'Polygon': "Poligono",
     'LineString': "Linea",
     'Point': "Punto",
-  }
+  },
+  draw_filename: 'Layer disegnato',
 }
