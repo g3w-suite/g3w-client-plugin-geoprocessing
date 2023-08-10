@@ -146,7 +146,7 @@ export default {
         layerId = layerId.split(':')[0];
         //set values from Input layer fields
         this.state.input.options.values = await this.getFieldsFromLayer(layerId, {
-            datatype: this.state.input.options.datatype,
+          datatype: this.state.input.options.datatype,
         })
         //check if multiple
         if (this.state.input.options.multiple) {

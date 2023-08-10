@@ -17,6 +17,11 @@ import Service from '../service';
 
 export default {
   name: "UploadVectorFile",
+  props: {
+    upload: {
+      type: Boolean,
+    }
+  },
   data() {
     return {
       layer: {
@@ -26,8 +31,11 @@ export default {
     }
   },
   methods: {
-    updateFile(){
-      this.$emit('add-layer', this.$refs.file.files[0]);
+    updateFile() {
+      this.$emit('add-layer', {
+        file: this.$refs.file.files[0],
+        type: 'upload'
+      });
     },
   },
   created(){

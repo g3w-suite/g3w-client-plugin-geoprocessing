@@ -64,23 +64,31 @@ function Service(){
    * @param options: <Object> datatype
    */
   this.getFieldsFromLayer = async function(layerId, params={}) {
+    // Check if it already fill by layerId
     if ("undefined" === typeof this.layerFields[layerId]) {
       this.layerFields[layerId] = {};
     }
+    // check if it was fill based on params
     if ("undefined" === typeof this.layerFields[layerId][JSON.stringify(params)]) {
-      try {
-        const response = await XHR.get({
-          url: `${this.config.urls.fields}${this.project.getId()}/${layerId}/`,
-          params
-        });
-        if (true === response.result) {
-          this.layerFields[layerId][JSON.stringify(params)] = response.fields;
+      //check if layerId belong to project layer or is id of temporary upload layer
+      if ("undefined" === typeof this.project.getLayers().find(layer => layer.id === layerId)) {
+        this.layerFields[layerId][JSON.stringify(params)] = [];
+      } else {
+        try {
+          //do request to api
+          const response = await XHR.get({
+            url: `${this.config.urls.fields}${this.project.getId()}/${layerId}/`,
+            params
+          });
+          if (true === response.result) {
+            this.layerFields[layerId][JSON.stringify(params)] = response.fields;
+          }
+        } catch(err) {
+          return [];
         }
-      } catch(err) {
       }
     }
     return this.layerFields[layerId][JSON.stringify(params)];
-
   }
 
   /**

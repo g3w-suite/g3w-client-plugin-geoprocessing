@@ -26,7 +26,7 @@ export default {
   },
   draw_types: {
     'Polygon': "Polygon",
-    'Circle': "Circle",
+    'LineString': "Line",
     'Point': "Point",
   }
 }
