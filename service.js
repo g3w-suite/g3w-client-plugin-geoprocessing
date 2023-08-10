@@ -1,3 +1,5 @@
+import prjvectorlayer_input from "./components/InputPrjVectorLayer.vue";
+
 const {
   utils: {base, inherit, XHR, downloadFile},
   geoutils: {isSameBaseGeometryType},
@@ -6,6 +8,7 @@ const {
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
 const {GUI} = g3wsdk.gui;
+
 
 function Service(){
   base(this);
@@ -30,6 +33,14 @@ function Service(){
 
     // manage and adapt model inputs with all input editing attributes needed
     this.transpilModelInputsAsEditingFormInputs();
+
+
+    //prefix file value to reconize which kind of file is loading
+
+    this.prefixCustomLayer = {
+      file: 'file',
+      external: '__g3w__external__'
+    }
 
     this.emit('ready', true);
   };
@@ -121,12 +132,10 @@ function Service(){
     this.mapService.defaultsLayers.selectionLayer.getSource().on('addfeature', self.emitChangeSelectedFeatures);
 
     this.mapService.defaultsLayers.selectionLayer.getSource().on('removefeature', self.emitChangeSelectedFeatures);
-
   }
 
-
   /**
-   * Unregister
+   * Unregister Select Features events
    */
   this.unregistersSelectedFeatureLayersEvent = function(){
 
@@ -135,7 +144,25 @@ function Service(){
     this.mapService.defaultsLayers.selectionLayer.getSource().un('removefeature', self.emitChangeSelectedFeatures);
   };
 
-
+  /**
+   * Convert datatype input vector layer to Ol geometries type
+   * @param datatypes
+   * @returns {*}
+   */
+  this.convertInputVectorDatatypesToOLGeometryTypes = function(datatypes){
+    return datatypes
+      .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
+      .map(geometry_type => {
+        switch (geometry_type){
+          case 'point':
+            return 'Point';
+          case 'line':
+            return 'LineString';
+          case 'polygon':
+            return 'Polygon';
+        }
+      });
+  };
 
   /**
    * Get all Project Vector Layers that has geometry types
@@ -155,6 +182,8 @@ function Service(){
     //check if no geometry layer type is request
     const nogeometry = "undefined" !== typeof datatypes.find(data_type => data_type === 'nogeometry');
 
+    //get geometry_types only from data_types array
+    const geometry_types = this.convertInputVectorDatatypesToOLGeometryTypes(datatypes);
 
     this.project.getLayers()
       //exclude base layer
@@ -189,19 +218,7 @@ function Service(){
             })
 
           } else {
-            //get geometry_types only from data_types array
-            const geometry_types = datatypes
-              .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
-              .map(geometry_type => {
-                switch (geometry_type){
-                  case 'point':
-                    return 'Point';
-                  case 'line':
-                    return 'LineString';
-                  case 'polygon':
-                    return 'Polygon';
-                }
-              });
+
             if (geometry_types.length > 0) {
               if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometrytype))) {
                 layers.push({
@@ -213,6 +230,32 @@ function Service(){
           }
         }
     })
+
+    //check for external
+    if (anygeometry || geometry_types.length > 0) {
+      //get external layers from catalog
+      GUI.getService('catalog').getExternalLayers({
+        type: 'vector'
+      }).forEach(layer => {
+        if (anygeometry) {
+          layers.push({
+            key: layer.name,
+            value:`${this.prefixCustomLayer.external}:${layer.id}`
+          })
+        }
+
+        if (geometry_types.length > 0) {
+          if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometryType))) {
+            layers.push({
+              key: layer.name,
+              value: `${this.prefixCustomLayer.external}:${layer.id}`
+            })
+          }
+        }
+
+      })
+    }
+
     return layers;
   };
 
@@ -234,6 +277,31 @@ function Service(){
         key: layer.name,
         value: layer.id
       }))
+  };
+
+  /**
+   *
+   * @param features
+   * @param name
+   * @param crs
+   * @returns {File}
+   */
+  this.createGeoJSONFileFromOLFeatures = function({features=[], name, crs}={}){
+    const geoJSONFormat = new ol.format.GeoJSON();
+    const geoJSONObject = geoJSONFormat.writeFeaturesObject(features);
+    geoJSONObject.crs = {
+      type: "name",
+      properties: {
+        "name": crs && this.mapService.getCrs()
+      }
+    }
+    return new File(
+      [JSON.stringify(geoJSONObject)],
+      `${name}.geojson`,
+      {
+        type: "application/geo+json",
+      }
+    );
   };
 
   /**
@@ -334,20 +402,58 @@ function Service(){
           }
         }
       };
-      const data = {
-        inputs: model.inputs.reduce((accumulator, input) => {
-          if (input.value) {
-            accumulator[input.name] = input.value;
+
+      //create inputs parmeters
+      const inputs = {};
+
+      for (const input of model.inputs) {
+        if (input.value) {
+          if (
+            (input.input.type === 'prjvectorlayer' || input.input.type === 'prjvectorlayerfeature') &&
+            input.value.startsWith(`${this.prefixCustomLayer.external}:`)
+          ) {
+            //extract layer id form input.value
+            const [,layerExternalId] = input.value.split(`${this.prefixCustomLayer.external}:`);
+            const {crs, name} = GUI.getService('catalog').getExternalLayers({type: 'vector'}).find(layer => layer.id === layerExternalId);
+            //get map ol layer from map
+            const OLlayer = this.mapService.getLayerById(layerExternalId);
+            //create a geojson file from freatures
+            const file = this.createGeoJSONFileFromOLFeatures({
+              name,
+              features: OLlayer.getSource().getFeatures(),
+              crs
+            });
+            //upload file to server
+            try {
+              const {value} = await this.uploadFile({
+                modelId: model.id,
+                inputName: input.name,
+                file
+              });
+              //change input value value from new value
+              input.value = value;
+            } catch(err) {
+              //reject
+              reject(err);
+            }
           }
-          return accumulator;
-        }, {}),
-        outputs: model.outputs.reduce((accumulator, output) => {
-          if (output.value) {
-            accumulator[output.name] = output.value;
-          }
-          return accumulator;
-        }, {}),
+          inputs[input.name] = input.value;
+        }
       }
+
+      //create outputs paramter
+      const outputs = model.outputs.reduce((accumulator, output) => {
+        if (output.value) {
+          accumulator[output.name] = output.value;
+        }
+        return accumulator;
+      }, {});
+
+      const data = {
+        inputs,
+        outputs,
+      }
+
       // start to run Task
       TaskService.runTask({
         url: `${this.config.urls.run}${model.id}/${this.project.getId()}/`, // url model
@@ -382,7 +488,7 @@ function Service(){
       if (responseJson.result) {
         return {
           key: file.name,
-          value: `file:${responseJson.data.file}`
+          value: `${this.prefixCustomLayer.file}:${responseJson.data.file}`
         }
       }
 

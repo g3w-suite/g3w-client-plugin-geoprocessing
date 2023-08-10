@@ -8,6 +8,8 @@
 
 <script>
 
+import Service from "../service";
+
 const {GUI} = g3wsdk.gui;
 
 const DRAW_GEOMETRY_TYPES = {
@@ -22,7 +24,6 @@ const DRAW_GEOMETRY_TYPES = {
  * - Read geojson when `TYPE = loadPOI`
  * - Write Polyogn, Circle or Point feature draw by map control
  */
-const geoJSONFormat = new ol.format.GeoJSON();
 
 export default {
   name: "DrawInputVectorFeatures",
@@ -97,41 +98,41 @@ export default {
           closable: false,
           hooks: {
             body: {
-                template: `
-                  <div style="width: 100%; padding: 5px;" v-disabled="state.loading">
-                  <!-- NB: it makes use of built-in g3w-client directive: "v-select2" -->
-                  <select
-                    v-select2 = "'type'"
-                    :search   = "false"
-                    ref       = "select"
-                    style     = "width: 100%">
-                    <option
-                      v-for      = "type in types"
-                      :key       = "type"
-                      :value     = "type"
-                      v-t-plugin = "'qprocessing.draw_types.'+type"
-                    ></option>
-                  </select>
+              template: `
+                <div style="width: 100%; padding: 5px;" v-disabled="state.loading">
+                <!-- NB: it makes use of built-in g3w-client directive: "v-select2" -->
+                <select
+                  v-select2 = "'type'"
+                  :search   = "false"
+                  ref       = "select"
+                  style     = "width: 100%">
+                  <option
+                    v-for      = "type in types"
+                    :key       = "type"
+                    :value     = "type"
+                    v-t-plugin = "'qprocessing.draw_types.'+type"
+                  ></option>
+                </select>
 
-                  <bar-loader :loading="state.loading"/>
+                <bar-loader :loading="state.loading"/>
 
-                  <button
-                    v-disabled="state.disabled"
-                    class="btn skin-background-color"
-                    @click.stop.prevent="uploadLayer(type)"
-                    style="margin: 3px; width: 100%">
-                    <i :class="[g3wtemplate.getFontClass('cloud-upload')]"></i>
-                  </button>
+                <button
+                  v-disabled="state.disabled"
+                  class="btn skin-background-color"
+                  @click.stop.prevent="uploadLayer(type)"
+                  style="margin: 3px; width: 100%">
+                  <i :class="[g3wtemplate.getFontClass('cloud-upload')]"></i>
+                </button>
 
-                  </div>`,
-                data: () => {
-                return {
-                  state: this.drawTool,
-                  types: this.drawGeometryTypes,
-                  type: this.drawGeometryTypes[0]
-                };
-              },
-                watch: {
+                </div>`,
+              data: () => {
+              return {
+                state: this.drawTool,
+                types: this.drawGeometryTypes,
+                type: this.drawGeometryTypes[0]
+              };
+            },
+              watch: {
 
                 /**
                  * @listens type change of drawed geometry
@@ -142,19 +143,16 @@ export default {
                 },
 
               },
-
-                methods: {
+              methods: {
                 uploadLayer: async (type) => {
                   const features = this.drawLayer.getSource().getFeatures();
                   await this.$nextTick();
-                  const file = new File(
-                    [geoJSONFormat.writeFeatures(features)],
-                    `${type}_${Date.now()}.geojson`,
-                    {
-                        type: "application/geo+json",
-                    }
-                  );
-
+                  //crate file
+                  const file = Service.createGeoJSONFileFromOLFeatures({
+                    features,
+                    name: `${type}_${Date.now()}`
+                  });
+                  //emit event
                   this.$emit('add-layer', {
                     file,
                     features,
