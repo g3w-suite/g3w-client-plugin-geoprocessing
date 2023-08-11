@@ -1,6 +1,6 @@
 import pluginConfig  from './config';
-
 import ModelResultsVueComponent from './components/ModelResults.vue';
+
 const {base, inherit} = g3wsdk.core.utils;
 const {Panel} = g3wsdk.gui;
 

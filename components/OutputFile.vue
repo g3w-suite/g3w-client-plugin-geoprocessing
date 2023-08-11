@@ -1,10 +1,27 @@
 <template>
-  <div v-t-tooltip:top.create="state.description" class="form-group">
-    <label style="color:#ffffff !important;" :for="state.name" class="col-sm-12">{{state.label}}</label>
+  <div
+    v-t-tooltip:top.create="state.description"
+    class="form-group">
+
+    <label
+      style="color:#ffffff !important;"
+      :for="state.name"
+      class="col-sm-12">{{state.label}}
+    </label>
+
     <div class="col-sm-12">
-      <select :id="state.name" v-select2="'type'" ref="select2"  class="form-control qprocessing-output-vectorlayer-select">
-        <option v-for="({key, value}) in state.input.options.values" :key="key"
-          :value="value">{{key}}</option>
+
+      <select
+        :id="state.name"
+        v-select2="'type'" ref="select2"
+        class="form-control qprocessing-output-vectorlayer-select">
+
+        <option
+          v-for="({key, value}) in state.input.options.values"
+          :key="key"
+          :value="value">{{key}}
+        </option>
+
       </select>
     </div>
   </div>

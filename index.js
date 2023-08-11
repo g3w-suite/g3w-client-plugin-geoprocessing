@@ -31,10 +31,7 @@ const Plugin = function() {
       this.setReady(true);
     });
 
-
     this.service.init(this.config);
-
-
   }
 
     /**

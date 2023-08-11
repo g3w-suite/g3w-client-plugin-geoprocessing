@@ -1,19 +1,37 @@
 <template>
-  <div class="qprocessing-upload-vector-file" style="flex-grow: 2">
+  <div
+    class="qprocessing-upload-vector-file"
+    style="flex-grow: 2">
+
     <section class="upload-file-content">
-      <form class="addlayer skin-border-color" v-t-tooltip:top.create="'mapcontrols.add_layer_control.drag_layer'">
-        <input ref="file" type="file" title=" " @change="updateFile" :accept="accept">
-        <h4 class="skin-color" style="font-weight: bold" v-if="layer.name">{{ layer.name }}</h4>
+
+      <form
+        class="addlayer skin-border-color"
+        v-t-tooltip:top.create="'mapcontrols.add_layer_control.drag_layer'">
+
+        <input
+          ref="file"
+          type="file"
+          title=" "
+          @change="updateFile"
+          :accept="accept">
+
         <div class="drag_and_drop">
-            <i :class="g3wtemplate.getFontClass('cloud-upload')" class="fa-2x" aria-hidden="true"></i>
+
+          <i
+            :class="g3wtemplate.getFontClass('cloud-upload')"
+            class="fa-2x"
+            aria-hidden="true">
+          </i>
+
         </div>
+
       </form>
     </section>
   </div>
 </template>
 
 <script>
-import Service from '../service';
 
 export default {
   name: "UploadVectorFile",
@@ -39,12 +57,24 @@ export default {
     },
   },
   created(){
-    this.accept = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'].map(format => `.${format}`).join(',')
+    this.accept = [
+      'zip',
+      'geojson',
+      'GEOJSON',
+      'kml',
+      'kmz',
+      'KMZ',
+      'KML',
+      'json',
+      'gpx',
+      'gml',
+      'csv'].map(format => `.${format}`).join(',')
   }
 }
 </script>
 
 <style scoped>
+
   form.addlayer {
     position: relative;
     border: 2px dashed;
@@ -69,6 +99,5 @@ export default {
     padding: 5px;
     color: #ffffff;
   }
-
 
  </style>

@@ -28,14 +28,20 @@
 
       <slot name="body">
         <select v-select2="'value'" :id="state.name" ref="select_layer" style="width:100%;"  class="form-control">
+
           <option
            v-for="value in state.input.options.values"
            :key="value.value"
            :value="value.value">{{ value.key }}
           </option>
+
         </select>
 
-        <div class="prjvectorlayerfeature-only-selected-features" v-if="isSelectedFeatures" v-disabled="selected_features_disabled">
+        <div
+          v-if="isSelectedFeatures"
+          v-disabled="selected_features_disabled"
+          class="prjvectorlayerfeature-only-selected-features">
+
           <input style="width:100%;"
             class="magic-checkbox"
             v-model="selected_features_checked"
@@ -49,20 +55,24 @@
           </label>
 
         </div>
+
       </slot>
 
       <slot name="message">
+
         <p
           v-if="notvalid"
           class="g3w-long-text error-input-message"
           style="margin: 0"
           v-html="state.validate.message">
         </p>
+
         <p
           v-else-if="state.info"
           style="margin: 0 "
           v-html="state.info">
         </p>
+
       </slot>
 
       <div
@@ -70,6 +80,7 @@
         v-html="state.help.message"
         class="g3w_input_help skin-background-color extralighten">
       </div>
+
     </div>
   </div>
 </template>
@@ -119,7 +130,7 @@ export default {
         return (datatype === 'anygeometry') || (['point', 'line', 'polygon'].indexOf(datatype) !== -1);
       });
     },
-    //check if can take in account of selected features
+    //check if it can take in account of selected features
     isSelectedFeatures(){
       return this.state.input.type === 'prjvectorlayerfeature';
     },
@@ -151,10 +162,10 @@ export default {
        //need to add only one external file
        this.state.input.options.values = this.state.input.options.values.filter(({key, value}) => !value.startsWith('file:'));
 
-       //handle temp faile
+       //handle temp layer
 
-       this.addTempLayer.getSource().clear(); //clear
-       this.addTempLayer.getSource().addFeatures(features); //add eventaully features
+       this.addTempLayer.getSource().clear(); //clear all eventually previous features
+       this.addTempLayer.getSource().addFeatures(features); //add eventually features
        this.addTempLayer.setVisible(true); //visible true
 
        this.state.input.options.values.push({
@@ -165,12 +176,16 @@ export default {
        await this.$nextTick();
        this.value = value;
        //set current select item
-       $(this.$refs.select_layer).select2().val(value).trigger('change');
+       $(this.$refs.select_layer)
+        .select2()
+        .val(value)
+        .trigger('change');
 
-     } catch(err){
-       console.log(err);
+     } catch(err) {
+       //In case of error
        this.errorUpload = true;
      }
+     //always set upload false
      this.upload = false;
    },
     /**
@@ -191,10 +206,11 @@ export default {
     setInputValueFromSelectedFeatures(checked) {
       const currentLayerFeatureSelectedIds = Service.getLayerSelectedFeaturesIds(this.value);
       if (true === checked && currentLayerFeatureSelectedIds.length > 0) {
-          this.state.value = `${this.value}:${currentLayerFeatureSelectedIds.join(',')}`
+        this.state.value = `${this.value}:${currentLayerFeatureSelectedIds.join(',')}`
       } else {
-          this.state.value = this.value;
+        this.state.value = this.value;
       }
+
       this.$emit('changeinput', this.state);
     },
     changeSelectedFeaturesEventHandler(){

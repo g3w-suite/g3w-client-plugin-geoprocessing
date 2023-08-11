@@ -69,7 +69,7 @@
           :progress="state.progress"/>
 
         <template v-else>
-            <bar-loader :loading="state.loading"/>
+          <bar-loader :loading="state.loading"/>
         </template>
 
         <button
@@ -131,6 +131,7 @@ export default {
     }
   },
   methods: {
+    //add model result to results
     addResultToModel(data={}){
       const {output, result} = data;
       if ("undefined" !== typeof result) {
@@ -146,9 +147,10 @@ export default {
             urls: [result[output.name]]
           })
         }
-        this.newResults = true;
+        this.newResults = true; // set new result to true
       }
     },
+    //return message color
     getMessageColor(){
       switch(this.state.message.type){
         case 'success':
@@ -158,6 +160,11 @@ export default {
       }
     },
 
+    /**
+     * Method to register by every inputs change of other input with dependence
+      * @param inputName
+     * @param handler
+     */
     registerChangeInputEvent({inputName, handler}={}) {
 
       if ("undefined" === typeof this.subscribe_change_input[inputName]) {
@@ -188,6 +195,7 @@ export default {
       this.state.message.show = false;
       await this.$nextTick();
       try {
+        //Run task
         this.task = await Service.runModel({
           model: this.model,
           state: this.state
@@ -201,22 +209,24 @@ export default {
       this.state.message.show = true;
 
     },
+    /**
+     * Show Model results Panel
+      */
     showModelResults(){
       const resultspanel = new ModelResults({model: this.model});
       resultspanel.show();
       this.newResults = false;
     }
   },
-  created(){
+  created() {
+    //Object contains subscribers of change parent input
     this.subscribe_change_input = {};
   },
   async mounted() {
     await this.$nextTick();
     //@TODO
     $('.qprocessing-model-inputs input').keypress((event) => {
-      if (event.which === 13) {
-        event.preventDefault();
-      }
+      if (event.which === 13) {event.preventDefault();}
     });
   },
   async beforeDestroy(){}

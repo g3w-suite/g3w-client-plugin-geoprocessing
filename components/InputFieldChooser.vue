@@ -10,20 +10,28 @@
 
     <div class="col-sm-12">
       <slot name="body">
+
         <bar-loader :loading="loading"/>
+
         <select v-select2="'value'"
           :multiple="state.input.options.multiple"
           :id="state.name"
           ref="select"
           style="width:100%;"
           class="form-control">
-          <option v-if="state.validate.required && !state.input.options.multiple" :value="null">---</option>
+
+          <option
+            v-if="state.validate.required && !state.input.options.multiple"
+            :value="null">---</option>
+
           <option v-for="value in state.input.options.values"
             :selected="state.input.options.default_to_all_fields"
             :key="value.value"
             :value="value.value">{{ value.key }}
           </option>
+
         </select>
+
       </slot>
 
       <slot name="message">
@@ -41,7 +49,12 @@
 
       </slot>
 
-      <div class="g3w_input_help skin-background-color extralighten" v-if="state.help && this.state.help.visible" v-html="state.help.message"></div>
+      <div
+        v-if="state.help && this.state.help.visible"
+        v-html="state.help.message"
+        class="g3w_input_help skin-background-color extralighten">
+      </div>
+
     </div>
 
   </div>
@@ -166,9 +179,6 @@ export default {
     //emit add input
     this.$emit('addinput', this.state);
   },
-
-  beforeDestroy(){}
-
 }
 </script>
 

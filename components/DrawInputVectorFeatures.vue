@@ -1,8 +1,17 @@
 <template>
-  <div class="qprocessing-draw-vector-features" style="font-size: 1.3em;">
-    <button class="btn skin-background-color" @click.stop.prevent="toggled = !toggled" style="height: 100%; margin-right: 0 !important;">
+  <div
+    class="qprocessing-draw-vector-features"
+    style="font-size: 1.3em;">
+
+    <button
+      class="btn skin-background-color"
+      style="height: 100%; margin-right: 0 !important;"
+      @click.stop.prevent="toggled = !toggled">
+
       <i :class="[g3wtemplate.getFontClass('pencil')]"></i>
+
     </button>
+
   </div>
 </template>
 
@@ -30,16 +39,16 @@ export default {
   name: "DrawInputVectorFeatures",
   props: {
     datatypes: {
-      type: Array,
+      type: Array, //array of datatypes from input
       default: []
     },
     upload:{
-      type: Boolean,
+      type: Boolean, //Boolean when file is upload ot not
     }
   },
   data() {
     return {
-      toggled: false,
+      toggled: false, //draw button toggled
       drawTool: {
         loading: this.upload,
         disabled: true
@@ -47,10 +56,18 @@ export default {
     }
   },
   methods: {
+    /**
+     *  Method when change draw type geometry (Point, Polygon ...)
+      * @param type
+     */
     changeDrawType(type) {
       this.setDrawInteraction(type);
     },
 
+    /**
+     * Method that handle draw interaction flow
+      * @param type
+     */
     setDrawInteraction(type=this.drawGeometryTypes[0]){
 
       //disable click map controls to avoid conflicts
@@ -87,6 +104,7 @@ export default {
 
   },
   watch: {
+    //listen toggled button
     toggled(bool){
       if (bool) {
         //set start interaction
@@ -127,12 +145,12 @@ export default {
 
                 </div>`,
               data: () => {
-              return {
-                state: this.drawTool,
-                types: this.drawGeometryTypes,
-                type: this.drawGeometryTypes[0]
-              };
-            },
+                return {
+                  state: this.drawTool,
+                  types: this.drawGeometryTypes,
+                  type: this.drawGeometryTypes[0]
+                };
+              },
               watch: {
 
                 /**
@@ -161,7 +179,7 @@ export default {
                   });
                 }
               },
-              }
+            }
           }
        });
       } else {

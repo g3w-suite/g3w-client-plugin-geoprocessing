@@ -1,6 +1,10 @@
 <template>
   <ul id="g3w-client-plugin-qprocessing" class="treeview-menu g3w-search g3w-tools menu-items">
-    <li v-for="model in models" :key="model.id" class="menu-item" @click.top="showPanel(model)">
+    <li
+      v-for="model in models"
+      :key="model.id"
+      class="menu-item"
+      @click.stop="showPanel(model)">
       <i :class="g3wtemplate.getFontClass('tool')"></i>
       <span>{{model.display_name}}</span>
     </li>
@@ -14,7 +18,7 @@ export default {
   name: "qprocessing-sidebar",
   data() {
     return {
-      models: Service.config.models
+      models: Service.config.models //get model from server plugin config
     };
   },
   methods:{

@@ -12,9 +12,10 @@ function ModelPanel(options={}) {
   const ModelPanelVueComponentClass = Vue.extend(ModelPanelVueComponent);
   const internalPanel = new ModelPanelVueComponentClass({
     propsData: {
-      model: options.model,
+      model: options.model, //send model as prop
     }
   });
+
   this.setInternalPanel(internalPanel);
 }
 

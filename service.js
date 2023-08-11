@@ -1,9 +1,8 @@
-import prjvectorlayer_input from "./components/InputPrjVectorLayer.vue";
-
 const {
   utils: {base, inherit, XHR, downloadFile},
   geoutils: {isSameBaseGeometryType},
-  plugin:{PluginService}} = g3wsdk.core;
+  plugin:{PluginService}
+} = g3wsdk.core;
 
 const {ProjectsRegistry} = g3wsdk.core.project;
 const {TaskService} = g3wsdk.core.task;
@@ -13,6 +12,12 @@ const {GUI} = g3wsdk.gui;
 function Service(){
   base(this);
   const self = this;
+
+  //prefix file value to recognize which kind of file is loading
+  this.prefixCustomLayer = {
+    file: 'file',
+    external: '__g3w__external__'
+  };
 
   /**
    *
@@ -34,14 +39,7 @@ function Service(){
     // manage and adapt model inputs with all input editing attributes needed
     this.transpilModelInputsAsEditingFormInputs();
 
-
-    //prefix file value to reconize which kind of file is loading
-
-    this.prefixCustomLayer = {
-      file: 'file',
-      external: '__g3w__external__'
-    }
-
+    //send emit ready
     this.emit('ready', true);
   };
 
@@ -75,7 +73,7 @@ function Service(){
    * @param options: <Object> datatype
    */
   this.getFieldsFromLayer = async function(layerId, params={}) {
-    // Check if it already fill by layerId
+    // Check if it already fills by layerId
     if ("undefined" === typeof this.layerFields[layerId]) {
       this.layerFields[layerId] = {};
     }
@@ -149,7 +147,7 @@ function Service(){
    * @param datatypes
    * @returns {*}
    */
-  this.convertInputVectorDatatypesToOLGeometryTypes = function(datatypes){
+  this.fromInputDatatypesToOLGeometryTypes = function(datatypes){
     return datatypes
       .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
       .map(geometry_type => {
@@ -183,23 +181,21 @@ function Service(){
     const nogeometry = "undefined" !== typeof datatypes.find(data_type => data_type === 'nogeometry');
 
     //get geometry_types only from data_types array
-    const geometry_types = this.convertInputVectorDatatypesToOLGeometryTypes(datatypes);
+    const geometry_types = this.fromInputDatatypesToOLGeometryTypes(datatypes);
 
     this.project.getLayers()
       //exclude base layer
       .filter(layer => !layer.baselayer)
       .forEach(layer => {
+        const key = layer.name;
+        const value = layer.id;
         //get layer if it has no geometry
         if (true === nogeometry) {
-
           if (
             (true === nogeometry) &&
             ("undefined" === typeof layer.geometrytype || "NoGeometry" === layer.geometrytype)
           ) {
-            layers.push({
-              key: layer.name,
-              value: layer.id
-            })
+            layers.push({key, value})
             return;
           }
         }
@@ -211,20 +207,12 @@ function Service(){
         ) {
           // in case of any geometry type
           if (true === anygeometry) {
-
-            layers.push({
-              key: layer.name,
-              value: layer.id
-            })
+            layers.push({key, value})
 
           } else {
-
             if (geometry_types.length > 0) {
               if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometrytype))) {
-                layers.push({
-                  key: layer.name,
-                  value: layer.id
-                })
+                layers.push({key, value})
               }
             }
           }
@@ -237,19 +225,15 @@ function Service(){
       GUI.getService('catalog').getExternalLayers({
         type: 'vector'
       }).forEach(layer => {
+        const value = `${this.prefixCustomLayer.external}:${layer.id}`;
+        const key = layer.name;
         if (anygeometry) {
-          layers.push({
-            key: layer.name,
-            value:`${this.prefixCustomLayer.external}:${layer.id}`
-          })
+          layers.push({key, value})
         }
 
         if (geometry_types.length > 0) {
           if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometryType))) {
-            layers.push({
-              key: layer.name,
-              value: `${this.prefixCustomLayer.external}:${layer.id}`
-            })
+            layers.push({key, value})
           }
         }
 
@@ -292,7 +276,7 @@ function Service(){
     geoJSONObject.crs = {
       type: "name",
       properties: {
-        "name": crs && this.mapService.getCrs()
+        "name": crs && this.mapService.getCrs() //add crs to geojsonObject
       }
     }
     return new File(
@@ -322,19 +306,14 @@ function Service(){
         const {result, progress, task_result, status, exception} = response;
         // in case of complete
         if (status === 'complete') {
-          TaskService.stopTask({
-            task_id
-          });
+          //stop current task
+          TaskService.stopTask({task_id});
           timeoutprogressintervall = null;
           if (null === task_result) {
             reject({})
           } else {
-            resolve({
-              result,
-              task_result,
-            });
+            resolve({result, task_result});
           }
-
         }
         else if (status === 'executing') {
           if (state.progress === null || state.progress === undefined) {
@@ -343,9 +322,7 @@ function Service(){
             if (progress > state.progress) timeoutprogressintervall = Date.now();
             else {
               if ((Date.now() - timeoutprogressintervall) > 600000){
-                TaskService.stopTask({
-                  task_id
-                });
+                TaskService.stopTask({task_id});
                 GUI.showUserMessage({
                   type: 'warning',
                   message: 'Timeout',
@@ -384,11 +361,10 @@ function Service(){
             state.progress = null;
             timeoutprogressintervall = null;
 
-            TaskService.stopTask({
-              task_id
-            });
+            //stop task
+            TaskService.stopTask({task_id});
 
-
+            //show user message with error
             GUI.showUserMessage({
               type: 'alert',
               message,
@@ -406,14 +382,16 @@ function Service(){
       //create inputs parmeters
       const inputs = {};
 
+      //Loop through inputs model
       for (const input of model.inputs) {
         if (input.value) {
           if (
-            (input.input.type === 'prjvectorlayer' || input.input.type === 'prjvectorlayerfeature') &&
+            (input.input.type === 'prjvectorlayer') &&
             input.value.startsWith(`${this.prefixCustomLayer.external}:`)
           ) {
             //extract layer id form input.value
             const [,layerExternalId] = input.value.split(`${this.prefixCustomLayer.external}:`);
+            //get external layer from catalog service
             const {crs, name} = GUI.getService('catalog').getExternalLayers({type: 'vector'}).find(layer => layer.id === layerExternalId);
             //get map ol layer from map
             const OLlayer = this.mapService.getLayerById(layerExternalId);
@@ -467,16 +445,11 @@ function Service(){
     })
   }
 
-  /**
-   * @TODO
-   * @param layer
-   */
-  this.addOutputVectorLayer = function(layer){}
-
   /*
   * Upload file
    */
   this.uploadFile = async function({modelId, inputName, file}){
+    //create form data instance
     const data = new FormData();
     data.append('file', file);
     try {
@@ -498,13 +471,6 @@ function Service(){
 
   };
 
-  /**
-   *
-   * @param geojson
-   */
-  this.createGeoJSONFile = function(geojson){
-    console.log(geojson)
-  }
 }
 
 inherit(Service, PluginService);
