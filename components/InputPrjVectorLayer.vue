@@ -90,6 +90,7 @@
 import UploadVectorFile from "./UploadVectorFile.vue";
 import DrawInputVectorFeatures from "./DrawInputVectorFeatures.vue";
 import Service from '../service';
+import Se from "../config/i18n/se";
 
 const {GUI} = g3wsdk.gui;
 const {selectMixin} = g3wsdk.gui.vue.Mixins;
@@ -216,7 +217,7 @@ export default {
     changeSelectedFeaturesEventHandler(){
       this.setDisabledSelectFeaturesCheckbox(this.value);
       this.setInputValueFromSelectedFeatures(this.selected_features_checked);
-    }
+    },
   },
 
   watch: {
@@ -265,6 +266,19 @@ export default {
     //set initial visibility to false
     this.addTempLayer.setVisible(false);
 
+    //listen add external Layer
+    this.keyAddExternal = Service.registerAddExternalLayer({
+      type: 'vector',
+      handler: (layer) => {
+        if (Service.isExternalLayerValidForInputDatatypes({
+          layer,
+          datatypes: this.state.input.options.datatypes
+        })) {
+          this.state.input.options.values.push(Service.externalVectorLayerToInputPrjVectorLayerValue(layer));
+        }
+      }
+    })
+
   },
   async mounted(){
     await this.$nextTick();
@@ -282,7 +296,8 @@ export default {
     this.addTempLayer.getSource().clear();
     GUI.getService('map').getMap().removeLayer(this.addTempLayer);
     this.addTempLayer = null;
-    ///
+    ///remove external layer
+    Service.unregisterAddExternalLayer(this.keyAddExternal);
 
   }
 }

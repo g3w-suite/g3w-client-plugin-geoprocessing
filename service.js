@@ -125,7 +125,7 @@ function Service(){
    * Register event on source selectionLayer
    * @param layerId
    */
-  this.registersSelectedFeatureLayersEvent = function(layerId){
+  this.registersSelectedFeatureLayersEvent = function(){
 
     this.mapService.defaultsLayers.selectionLayer.getSource().on('addfeature', self.emitChangeSelectedFeatures);
 
@@ -143,11 +143,31 @@ function Service(){
   };
 
   /**
+   * Register add external layer
+   * @param handler Function
+   */
+  this.registerAddExternalLayer = function({type='vector', handler}= {}){
+    return GUI.getService('catalog').onafter('addExternalLayer', ({type:externalLayerType, layer}) =>{
+      if (type === externalLayerType) {
+        handler(layer);
+      }
+    });
+  }
+
+  /*
+   Unregister
+   */
+  this.unregisterAddExternalLayer = function(key){
+    GUI.getService('catalog').un('addExternalLayer', key);
+  }
+
+
+  /**
    * Convert datatype input vector layer to Ol geometries type
    * @param datatypes
    * @returns {*}
    */
-  this.fromInputDatatypesToOLGeometryTypes = function(datatypes){
+  this.fromInputDatatypesToOLGeometryTypes = function(datatypes=[]){
     return datatypes
       .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
       .map(geometry_type => {
@@ -161,6 +181,35 @@ function Service(){
         }
       });
   };
+
+  /**
+   * Method to convert external layer to an object useful to  input prjvector layer
+   * @param layer
+   * @returns {{value: string, key}}
+   */
+  this.externalVectorLayerToInputPrjVectorLayerValue = function(layer){
+    return {
+      key:layer.name,
+      value: `${this.prefixCustomLayer.external}:${layer.id}`
+    }
+  }
+
+
+  /**
+   *
+   * @param layer external layer Object
+   * @param datatypes Array
+   * @returns {boolean}
+   */
+  this.isExternalLayerValidForInputDatatypes = function({layer, datatypes=[]}={}){
+    return (
+      ("undefined" !== typeof datatypes.find(data_type => data_type === 'anygeometry')) ||
+      ("undefined" !== typeof this.fromInputDatatypesToOLGeometryTypes(datatypes)
+        .find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometryType)
+        )
+      )
+    )
+  }
 
   /**
    * Get all Project Vector Layers that has geometry types
@@ -208,7 +257,6 @@ function Service(){
           // in case of any geometry type
           if (true === anygeometry) {
             layers.push({key, value})
-
           } else {
             if (geometry_types.length > 0) {
               if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometrytype))) {
@@ -225,18 +273,12 @@ function Service(){
       GUI.getService('catalog').getExternalLayers({
         type: 'vector'
       }).forEach(layer => {
-        const value = `${this.prefixCustomLayer.external}:${layer.id}`;
-        const key = layer.name;
-        if (anygeometry) {
-          layers.push({key, value})
+        if (this.isExternalLayerValidForInputDatatypes({
+          layer,
+          datatypes
+        })) {
+          layers.push(this.externalVectorLayerToInputPrjVectorLayerValue(layer))
         }
-
-        if (geometry_types.length > 0) {
-          if ("undefined" !== typeof geometry_types.find(geometry_type => isSameBaseGeometryType(geometry_type, layer.geometryType))) {
-            layers.push({key, value})
-          }
-        }
-
       })
     }
 
