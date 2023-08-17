@@ -141,6 +141,10 @@ export default {
     }
   },
   methods: {
+    //validity of input
+    isValid(value) {
+      return value !== typeof "undefined" && null !== value;
+    },
     /*
     * Show/hide temp tool
     * */
@@ -227,6 +231,7 @@ export default {
         this.setDisabledSelectFeaturesCheckbox(value);
       }
       this.state.value = value;
+      this.state.validate.valid = this.isValid(value);
       this.$emit('changeinput', this.state);
     },
     //Listen selected feature checkbox event change
@@ -283,7 +288,9 @@ export default {
   async mounted(){
     await this.$nextTick();
     this.select2 = $(this.$refs.select_layer);
+    //need to emit add input to validate
     this.$emit('addinput', this.state);
+    this.$emit('changeinput', this.state);
   },
   beforeDestroy(){
 
