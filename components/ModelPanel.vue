@@ -134,7 +134,7 @@ export default {
     //add model result to results
     addResultToModel(data={}){
       const {output, result} = data;
-      if ("undefined" !== typeof result) {
+      if (undefined !== result) {
         const id = output.name;
          //check if output contain already result
         const findResultOutput = this.model.results.find(result => result.id === id);
@@ -190,7 +190,7 @@ export default {
      * Run model method
      * @returns {Promise<void>}
      */
-    async run(){
+    async run() {
       this.state.loading = true;
       this.state.message.show = false;
       await this.$nextTick();

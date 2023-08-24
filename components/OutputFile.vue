@@ -30,7 +30,7 @@
 <script>
 
 export default {
-  name: "OutputRasterLayer",
+  name: "OutputFile",
   props: {
     state: {
       type: Object,
@@ -57,9 +57,9 @@ export default {
     },
     async task(response={}){
      const {task_result={}} = response;
-     const fileUrl = task_result[this.state.name];
-     this.$emit('add-result-to-model-results', {
-       url: fileUrl
+      this.$emit('add-result-to-model-results', {
+       output: this.state,
+       result: task_result
      })
     }
   },
