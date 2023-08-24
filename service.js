@@ -318,7 +318,7 @@ function Service(){
     geoJSONObject.crs = {
       type: "name",
       properties: {
-        "name": crs && this.mapService.getCrs() //add crs to geojsonObject
+        "name": crs || this.mapService.getCrs() //add crs to geojsonObject
       }
     }
     return new File(
