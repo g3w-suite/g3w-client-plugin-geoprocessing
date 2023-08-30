@@ -64,7 +64,7 @@
 <script>
 
 import Service from '../service';
-const { baseInputMixin, selectMixin } = g3wsdk.gui.vue.Mixins;
+const { selectMixin } = g3wsdk.gui.vue.Mixins;
 
 export default {
   name: "InputFieldChooser",
