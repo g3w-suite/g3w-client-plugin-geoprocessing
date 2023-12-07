@@ -476,6 +476,7 @@ function Service(){
 
       const url = `${this.config.urls.run}${model.id}/${this.project.getId()}/` // url model
 
+      //Check if configured in async mode
       if (this.config.async) {
         // start to run Task
         TaskService.runTask({
@@ -487,7 +488,7 @@ function Service(){
           method: 'POST',
           listener
         })
-      } else {
+      } else { //get result directly
         XHR.post({
           url,
           data: JSON.stringify(data),
