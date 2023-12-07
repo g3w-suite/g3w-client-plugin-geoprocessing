@@ -474,16 +474,29 @@ function Service(){
         outputs,
       }
 
-      // start to run Task
-      TaskService.runTask({
-        url: `${this.config.urls.run}${model.id}/${this.project.getId()}/`, // url model
-        taskUrl: this.config.urls.taskinfo, // url to ask task is end
-        params: {
-          data: JSON.stringify(data)
-        }, // request params
-        method: 'POST',
-        listener
-      })
+      const url = `${this.config.urls.run}${model.id}/${this.project.getId()}/` // url model
+
+      if (this.config.async) {
+        // start to run Task
+        TaskService.runTask({
+          url,
+          taskUrl: this.config.urls.taskinfo, // url to ask task is end
+          params: {
+            data: JSON.stringify(data)
+          }, // request params
+          method: 'POST',
+          listener
+        })
+      } else {
+        XHR.post({
+          url,
+          data: JSON.stringify(data),
+          contentType: 'application/json'
+        })
+          .then(({result, data: task_result}) => {
+            resolve({result, task_result});
+          })
+      }
     })
   }
 
