@@ -52,7 +52,7 @@ export default {
     }
   },
   watch: {
-    type(value){
+    type(value) {
       this.changeSelect(value)
     },
     async task(response={}){
