@@ -37,8 +37,14 @@
 <script>
 
 const {GUI} = g3wsdk.gui;
-const { uniqueId, getRandomColor} = g3wsdk.core.utils;
-const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = g3wsdk.core.geoutils;
+const {
+  uniqueId,
+  getRandomColor
+} = g3wsdk.core.utils;
+const {
+  createVectorLayerFromFile,
+  createStyleFunctionToVectorLayer
+} = g3wsdk.core.geoutils;
 export default {
   name: "OutputVectorLayer",
   props: {
@@ -63,10 +69,10 @@ export default {
     }
   },
   watch: {
-    type(value){
+    type(value) {
       this.changeSelect(value)
     },
-    async task(response={}){
+    async task(response={}) {
      const {task_result={}} = response;
      //get value from name of the output
      const fileUrl = task_result[this.state.name];
