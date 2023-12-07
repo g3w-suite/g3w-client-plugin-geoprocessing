@@ -27,7 +27,7 @@
                     <i
                       :class="g3wtemplate.font['trash']"
                       style="color: red"
-                      @click.stop.prevent="result.urls.splice(index, 1)">
+                      @click.stop.prevent="removeResult(index)">
                     </i>
 
                 </section>
@@ -42,6 +42,7 @@
 
 <script>
 const {downloadFile} = g3wsdk.core.utils;
+const {GUI}          = g3wsdk.gui;
 
 export default {
   name: "ModelResults",
@@ -51,6 +52,13 @@ export default {
     }
   },
   methods: {
+    //@since v3.7.0
+    removeResult(index) {
+      this.result.urls.splice(index, 1);
+      if (this.result.urls.length === 0) {
+        GUI.popContent();
+      }
+    },
     downloadResult(url) {
       downloadFile({
         url
