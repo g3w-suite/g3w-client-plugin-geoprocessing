@@ -95,14 +95,14 @@
 
 <script>
 
-import ModelInputs from '../form/inputs';
+import ModelInputs  from '../form/inputs';
 import ModelOutputs from '../form/outputs';
-import Service from '../service';
+import Service      from '../service';
 import ModelResults from '../modelresults';
 
-const {GUI} = g3wsdk.gui;
-
+const {GUI}                = g3wsdk.gui;
 const { formInputsMixins } = g3wsdk.gui.vue.Mixins;
+
 export default {
   name: "modelPanel",
   mixins: [formInputsMixins],
@@ -132,7 +132,7 @@ export default {
   },
   methods: {
     //add model result to results
-    addResultToModel(data={}){
+    addResultToModel(data={}) {
       const {output, result} = data;
       if (undefined !== result) {
         const id = output.name;
@@ -151,7 +151,7 @@ export default {
       }
     },
     //return message color
-    getMessageColor(){
+    getMessageColor() {
       switch(this.state.message.type){
         case 'success':
           return 'green';
@@ -212,7 +212,7 @@ export default {
     /**
      * Show Model results Panel
       */
-    showModelResults(){
+    showModelResults() {
       const resultspanel = new ModelResults({model: this.model});
       resultspanel.show();
       this.newResults = false;
@@ -225,8 +225,11 @@ export default {
   async mounted() {
     await this.$nextTick();
     //@TODO
-    $('.qprocessing-model-inputs input').keypress((event) => {
-      if (event.which === 13) {event.preventDefault();}
+    $('.qprocessing-model-inputs input')
+      .keypress((event) => {
+        if (event.which === 13) {
+          event.preventDefault();
+        }
     });
   },
   async beforeDestroy(){}
