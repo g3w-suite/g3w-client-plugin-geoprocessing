@@ -14,11 +14,12 @@
         <div class="box-primary">
           <div class="box-body">
             <component
+              v-for="input in model.inputs"
+              :key="input.name"
               :modelId="model.id"
               @register-change-input="registerChangeInputEvent"
               @addinput="addToValidate"
               @changeinput="_changeInput(input)"
-              v-for="input in model.inputs" :key="input.name"
               :state="input"
               :is="`${input.input.type}_input`"/>
           </div>
@@ -35,8 +36,9 @@
           <div class="box-primary">
             <div class="box-body">
               <component
+                v-for="output in model.outputs"
+                :key="output.name"
                 @add-result-to-model-results="addResultToModel"
-                v-for="output in model.outputs" :key="output.name"
                 :state="output"
                 :task="task"
                 :is="`${output.input.type}`"/>
