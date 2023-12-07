@@ -203,7 +203,7 @@ export default {
           state: this.state
         });
         this.state.message.type = 'success';
-      } catch(err){
+      } catch(err) {
         this.state.message.type = 'error';
       }
 
