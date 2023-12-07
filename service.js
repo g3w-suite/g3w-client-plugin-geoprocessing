@@ -331,11 +331,86 @@ function Service(){
   };
 
   /**
+   * TO handle complete task ot sync request model
+   * @since v3.7.0
+   * @param response server response
+   * @param resolve resolve method of a Promise
+   * @param reject reject method of a Promise
+   * @private
+   */
+  this._handleCompleteModelResponse = function(response, {
+    resolve,
+    reject,
+  }) {
+    let {result, task_result, data} = response;
+    //case sync request model return data instead of task_result
+    if (data) {
+      task_result = data;
+    }
+    //in case of task_result null
+    if (null === task_result || false === result) {
+      reject({});
+    } else {
+      resolve({result, task_result});
+    }
+  }
+
+  /**
+   * Handel Async or Sync response error
+   * @param response
+   * @param reject
+   * @private
+   */
+  this._handleErrorModelResponse = function(response, {
+    reject,
+  }) {
+    const {status, exception} = response;
+    let statusError = false;
+    let textMessage = false;
+    let message;
+
+    switch(status) {
+      case '500':
+      case 500:
+        message = (
+          response.responseJSON ?
+          (response.responseJSON.exception || response.responseJSON.error.message) :
+          'server_error'
+        );
+        textMessage = "undefined" !== typeof exception;
+        statusError = true;
+        break;
+      case 'error':
+        message = exception;
+        textMessage = true;
+        statusError = true;
+        break;
+    }
+
+    // in case of status error
+    if (statusError) {
+      //show user message with error
+      GUI.showUserMessage({
+        type: 'alert',
+        message,
+        textMessage
+      });
+
+      reject({
+        statusError:true,
+        timeout: false
+      })
+    }
+
+    return statusError;
+  }
+
+  /**
    * Method to run model
    * @param model
    * @returns {Promise<unknown>}
    */
-  this.runModel = function({model, state}={}){
+  this.runModel = function({model, state}={}) {
     return new Promise(async (resolve, reject) => {
       let timeoutprogressintervall;
       /**
@@ -345,17 +420,16 @@ function Service(){
        * @param response
        */
       const listener = ({task_id, timeout, response}) => {
-        const {result, progress, task_result, status, exception} = response;
+        const {progress, status} = response;
         // in case of complete
         if (status === 'complete') {
           //stop current task
           TaskService.stopTask({task_id});
           timeoutprogressintervall = null;
-          if (null === task_result) {
-            reject({})
-          } else {
-            resolve({result, task_result});
-          }
+          this._handleCompleteModelResponse(response, {
+            resolve,
+            reject
+          })
         }
         else if (status === 'executing') {
           if (state.progress === null || state.progress === undefined) {
@@ -381,42 +455,16 @@ function Service(){
           state.progress = progress;
         }
         else {
-          let statusError = false;
-          let textMessage = false;
-          let message;
-          switch(status) {
-            case '500':
-            case 500:
-              message = (response.responseJSON && response.responseJSON.exception) || 'server_error';
-              textMessage = "undefined" !== typeof exception;
-              statusError = true;
-              break;
-            case 'error':
-              message = exception;
-              textMessage = true;
-              statusError = true;
-              break;
-          }
+          const statusError = this._handleErrorModelResponse(response, {
+            reject,
+          });
 
-          // in case of status error
           if (statusError) {
             state.progress = null;
             timeoutprogressintervall = null;
 
             //stop task
             TaskService.stopTask({task_id});
-
-            //show user message with error
-            GUI.showUserMessage({
-              type: 'alert',
-              message,
-              textMessage
-            });
-
-            reject({
-              statusError:true,
-              timeout: false
-            })
           }
         }
       };
@@ -491,11 +539,22 @@ function Service(){
       } else { //get result directly
         XHR.post({
           url,
-          data: JSON.stringify(data),
+          data: JSON.stringify({}),
           contentType: 'application/json'
         })
-          .then(({result, data: task_result}) => {
-            resolve({result, task_result});
+          .then((response) => {
+            console.log(response)
+            this._handleCompleteModelResponse(response, {
+              resolve,
+              reject
+            })
+
+          })
+          .catch((response) => {
+            response.status = 500;
+            this._handleErrorModelResponse(response, {
+              reject,
+            });
           })
       }
     })
