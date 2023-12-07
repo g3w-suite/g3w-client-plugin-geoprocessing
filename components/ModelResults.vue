@@ -51,7 +51,7 @@ export default {
     }
   },
   methods: {
-    downloadResult(url){
+    downloadResult(url) {
       downloadFile({
         url
       })
