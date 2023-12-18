@@ -539,11 +539,10 @@ function Service(){
       } else { //get result directly
         XHR.post({
           url,
-          data: JSON.stringify({}),
+          data: JSON.stringify(data),
           contentType: 'application/json'
         })
           .then((response) => {
-            console.log(response)
             this._handleCompleteModelResponse(response, {
               resolve,
               reject
