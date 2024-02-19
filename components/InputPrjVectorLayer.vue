@@ -104,7 +104,7 @@ export default {
   },
   props: {
       modelId: {
-      type: String,
+      type: Number,
       required: true,
     },
     state: {
