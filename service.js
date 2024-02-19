@@ -1,12 +1,12 @@
 const {
-  utils: {base, inherit, XHR, downloadFile},
-  geoutils: {isSameBaseGeometryType},
-  plugin:{PluginService}
-} = g3wsdk.core;
+  utils: { base, inherit, XHR },
+  geoutils: { isSameBaseGeometryType },
+  plugin:{ PluginService }
+}                          = g3wsdk.core;
 
-const {ProjectsRegistry} = g3wsdk.core.project;
-const {TaskService} = g3wsdk.core.task;
-const {GUI} = g3wsdk.gui;
+const { ProjectsRegistry } = g3wsdk.core.project;
+const { TaskService }      = g3wsdk.core.task;
+const { GUI }              = g3wsdk.gui;
 
 
 function Service(){
@@ -93,6 +93,7 @@ function Service(){
             this.layerFields[layerId][JSON.stringify(params)] = response.fields;
           }
         } catch(err) {
+          console.warn(err);
           return [];
         }
       }
@@ -145,8 +146,12 @@ function Service(){
   /**
    * Register add external layer
    * @param handler Function
+   * @param type
    */
-  this.registerAddExternalLayer = function({type='vector', handler}= {}){
+  this.registerAddExternalLayer = function({
+    type='vector',
+    handler
+  }= {}){
     return GUI.getService('catalog').onafter('addExternalLayer', ({type:externalLayerType, layer}) =>{
       if (type === externalLayerType) {
         handler(layer);
@@ -408,9 +413,10 @@ function Service(){
   /**
    * Method to run model
    * @param model
+   * @param state
    * @returns {Promise<unknown>}
    */
-  this.runModel = function({model, state}={}) {
+  this.runModel = function({ model, state } = {}) {
     return new Promise(async (resolve, reject) => {
       let timeoutprogressintervall;
       /**
@@ -430,13 +436,13 @@ function Service(){
             resolve,
             reject
           })
-        }
-        else if (status === 'executing') {
+        } else if (status === 'executing') {
           if (state.progress === null || state.progress === undefined) {
             timeoutprogressintervall = Date.now();
           } else {
-            if (progress > state.progress) timeoutprogressintervall = Date.now();
-            else {
+            if (progress > state.progress) {
+              timeoutprogressintervall = Date.now();
+            } else {
               if ((Date.now() - timeoutprogressintervall) > 600000){
                 TaskService.stopTask({task_id});
                 GUI.showUserMessage({
