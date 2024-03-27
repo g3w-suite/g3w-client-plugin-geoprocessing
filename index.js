@@ -58,7 +58,7 @@ const Plugin = function() {
               when: 'before',
               cb:() => { /* TODO: add sample usage */ }
             }
-            },
+          },
           sidebarOptions: {
             position: 'spatialbookmarks'                     // can be a number or a string
           }
