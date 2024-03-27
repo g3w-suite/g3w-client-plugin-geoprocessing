@@ -13,7 +13,7 @@
 
 <script>
 import ModelPanel from '../modelpanel';
-import Service from '../service';
+import Service    from '../service';
 export default {
   name: "qprocessing-sidebar",
   data() {

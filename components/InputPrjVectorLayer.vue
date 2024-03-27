@@ -87,10 +87,9 @@
 
 <script>
 
-import UploadVectorFile from "./UploadVectorFile.vue";
+import UploadVectorFile        from "./UploadVectorFile.vue";
 import DrawInputVectorFeatures from "./DrawInputVectorFeatures.vue";
-import Service from '../service';
-import Se from "../config/i18n/se";
+import Service                 from '../service';
 
 const {GUI} = g3wsdk.gui;
 const {selectMixin} = g3wsdk.gui.vue.Mixins;

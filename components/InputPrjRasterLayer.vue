@@ -66,6 +66,7 @@
 
 <script>
 import Service from '../service';
+
 const { selectMixin } = g3wsdk.gui.vue.Mixins;
 
 export default {

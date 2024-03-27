@@ -41,7 +41,7 @@
 </template>
 
 <script>
-const {downloadFile} = g3wsdk.core.utils;
+const { downloadFile } = g3wsdk.core.utils;
 
 export default {
   name: "ModelResults",

@@ -56,7 +56,7 @@ const Plugin = function() {
           events: {
             open: {
               when: 'before',
-              cb:()=> { /* TODO: add sample usage */ }
+              cb:() => { /* TODO: add sample usage */ }
             }
             },
           sidebarOptions: {

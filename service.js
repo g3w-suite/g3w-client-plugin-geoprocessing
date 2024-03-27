@@ -9,7 +9,7 @@ const { TaskService }      = g3wsdk.core.task;
 const { GUI }              = g3wsdk.gui;
 
 
-function Service(){
+function Service() {
   base(this);
   const self = this;
 
@@ -30,7 +30,7 @@ function Service(){
     //get map service
     this.mapService = GUI.getService('map');
 
-    // get current project
+    // get a current project
     this.project = ProjectsRegistry.getCurrentProject();
 
     //store layer fields base on layerId and datatype
@@ -46,7 +46,7 @@ function Service(){
   /**
    * Method to transform/transpile model inputs with the same attributes needed by editing inputs
    */
-  this.transpilModelInputsAsEditingFormInputs = function(){
+  this.transpilModelInputsAsEditingFormInputs = function() {
     this.config.models.forEach(model => {
       model.inputs.forEach(input => {
         input.visible = true; // set visibility of input
@@ -104,7 +104,7 @@ function Service(){
   /**
    * Method that emit change selected feature when a layer feature selection change
    */
-  this.emitChangeSelectedFeatures = function(){
+  this.emitChangeSelectedFeatures = function() {
     self.emit('change-selected-features');
   }
 
@@ -113,7 +113,7 @@ function Service(){
    * @param layerId
    * @returns {*}
    */
-  this.getLayerSelectedFeaturesIds = function(layerId){
+  this.getLayerSelectedFeaturesIds = function(layerId) {
     return this.mapService
       .defaultsLayers.selectionLayer
       .getSource()
@@ -126,7 +126,7 @@ function Service(){
    * Register event on source selectionLayer
    * @param layerId
    */
-  this.registersSelectedFeatureLayersEvent = function(){
+  this.registersSelectedFeatureLayersEvent = function() {
 
     this.mapService.defaultsLayers.selectionLayer.getSource().on('addfeature', self.emitChangeSelectedFeatures);
 
@@ -136,7 +136,7 @@ function Service(){
   /**
    * Unregister Select Features events
    */
-  this.unregistersSelectedFeatureLayersEvent = function(){
+  this.unregistersSelectedFeatureLayersEvent = function() {
 
     this.mapService.defaultsLayers.selectionLayer.getSource().un('addfeature', self.emitChangeSelectedFeatures);
 
@@ -151,7 +151,7 @@ function Service(){
   this.registerAddExternalLayer = function({
     type='vector',
     handler
-  }= {}){
+  }= {}) {
     return GUI.getService('catalog').onafter('addExternalLayer', ({type:externalLayerType, layer}) =>{
       if (type === externalLayerType) {
         handler(layer);
@@ -162,17 +162,16 @@ function Service(){
   /*
    Unregister
    */
-  this.unregisterAddExternalLayer = function(key){
+  this.unregisterAddExternalLayer = function(key) {
     GUI.getService('catalog').un('addExternalLayer', key);
   }
-
 
   /**
    * Convert datatype input vector layer to Ol geometries type
    * @param datatypes
    * @returns {*}
    */
-  this.fromInputDatatypesToOLGeometryTypes = function(datatypes=[]){
+  this.fromInputDatatypesToOLGeometryTypes = function(datatypes=[]) {
     return datatypes
       .filter(datatype => ['point', 'line', 'polygon'].indexOf(datatype) !== -1)
       .map(geometry_type => {
@@ -188,11 +187,11 @@ function Service(){
   };
 
   /**
-   * Method to convert external layer to an object useful to  input prjvector layer
+   * Method to convert external layer to an object useful to input prjvector layer
    * @param layer
    * @returns {{value: string, key}}
    */
-  this.externalVectorLayerToInputPrjVectorLayerValue = function(layer){
+  this.externalVectorLayerToInputPrjVectorLayerValue = function(layer) {
     return {
       key:layer.name,
       value: `${this.prefixCustomLayer.external}:${layer.id}`
@@ -206,7 +205,7 @@ function Service(){
    * @param datatypes Array
    * @returns {boolean}
    */
-  this.isExternalLayerValidForInputDatatypes = function({layer, datatypes=[]}={}){
+  this.isExternalLayerValidForInputDatatypes = function({ layer, datatypes=[] }={}) {
     return (
       ("undefined" !== typeof datatypes.find(data_type => data_type === 'anygeometry')) ||
       ("undefined" !== typeof this.fromInputDatatypesToOLGeometryTypes(datatypes)
@@ -226,7 +225,7 @@ function Service(){
    *   'anygeometry'
    * return <Array>
    */
-  this.getInputPrjVectorLayerData = function(datatypes=[]){
+  this.getInputPrjVectorLayerData = function(datatypes=[]) {
     const layers = [];
 
     //check if any geometry layer type is request
@@ -259,7 +258,7 @@ function Service(){
           ("undefined" !== typeof layer.geometrytype) &&
           ("NoGeometry" !== layer.geometrytype)
         ) {
-          // in case of any geometry type
+          // in the case of any geometry type
           if (true === anygeometry) {
             layers.push({key, value})
           } else {
@@ -300,7 +299,7 @@ function Service(){
    *   'anygeometry'
    * return <Array>
    */
-  this.getInputPrjRasterLayerData = function(){
+  this.getInputPrjRasterLayerData = function() {
     return this.project.getLayers()
       //exclude base layer
       .filter(layer => !layer.baselayer && ("undefined" !== typeof layer.source && layer.source.type === 'gdal'))
@@ -317,7 +316,7 @@ function Service(){
    * @param crs
    * @returns {File}
    */
-  this.createGeoJSONFileFromOLFeatures = function({features=[], name, crs}={}){
+  this.createGeoJSONFileFromOLFeatures = function({features=[], name, crs}={}) {
     const geoJSONFormat = new ol.format.GeoJSON();
     const geoJSONObject = geoJSONFormat.writeFeaturesObject(features);
     geoJSONObject.crs = {
@@ -394,7 +393,7 @@ function Service(){
 
     // in case of status error
     if (statusError) {
-      //show user message with error
+      //show a user message with error
       GUI.showUserMessage({
         type: 'alert',
         message,
@@ -478,7 +477,7 @@ function Service(){
       //create inputs parmeters
       const inputs = {};
 
-      //Loop through inputs model
+      //Loop through input model
       for (const input of model.inputs) {
         if (input.value) {
           if (
@@ -568,7 +567,7 @@ function Service(){
   /*
   * Upload file
    */
-  this.uploadFile = async function({modelId, inputName, file}){
+  this.uploadFile = async function({modelId, inputName, file}) {
     //create form data instance
     const data = new FormData();
     data.append('file', file);

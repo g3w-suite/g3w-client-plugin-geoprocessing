@@ -19,8 +19,8 @@
 
 import Service from "../service";
 
-const {GUI} = g3wsdk.gui;
-const {tPlugin} = g3wsdk.core.i18n;
+const { GUI }     = g3wsdk.gui;
+const { tPlugin } = g3wsdk.core.i18n;
 
 const DRAW_GEOMETRY_TYPES = {
   point: 'Point',

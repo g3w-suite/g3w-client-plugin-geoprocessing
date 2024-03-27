@@ -1,8 +1,8 @@
-import pluginConfig  from './config';
+import pluginConfig             from './config';
 import ModelResultsVueComponent from './components/ModelResults.vue';
 
-const {base, inherit} = g3wsdk.core.utils;
-const {Panel} = g3wsdk.gui;
+const { base, inherit } = g3wsdk.core.utils;
+const { Panel }         = g3wsdk.gui;
 
 function ModelResults(options={}) {
   base(this, {
