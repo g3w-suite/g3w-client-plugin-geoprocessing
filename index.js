@@ -60,7 +60,7 @@ const Plugin = function() {
             }
           },
           sidebarOptions: {
-            position: 1                     // can be a number or a string
+            position: "spatialbookmarks"                     // can be a number or a string
           }
         });
     };
