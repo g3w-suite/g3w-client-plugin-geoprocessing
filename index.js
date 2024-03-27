@@ -1,10 +1,10 @@
-import pluginConfig from './config';
-import Service from "./service";
+import pluginConfig     from './config';
+import Service          from "./service";
 import SidebarComponent from './components/Sidebar.vue';
 
-const {base, inherit} = g3wsdk.core.utils;
-const {Plugin: BasePlugin} = g3wsdk.core.plugin;
-const {GUI} = g3wsdk.gui;
+const { base, inherit }      = g3wsdk.core.utils;
+const { Plugin: BasePlugin } = g3wsdk.core.plugin;
+const { GUI }                = g3wsdk.gui;
 
 const Plugin = function() {
   const {name, i18n} = pluginConfig;
@@ -56,11 +56,11 @@ const Plugin = function() {
           events: {
             open: {
               when: 'before',
-              cb:()=> { /* TODO: add sample usage */ }
+              cb:() => { /* TODO: add sample usage */ }
             }
-            },
+          },
           sidebarOptions: {
-            position: 'spatialbookmarks'                     // can be a number or a string
+            position: 1                     // can be a number or a string
           }
         });
     };
