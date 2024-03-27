@@ -25,7 +25,7 @@ export default {
     };
   },
   methods:{
-    showPanel(model){
+    showPanel(model) {
       const panel = new ModelPanel({model});
       panel.show();
     }
