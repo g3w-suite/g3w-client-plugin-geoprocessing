@@ -93,7 +93,7 @@ export default {
 
       // ie. geojson, kml
       if (!['zip', 'kmz'].includes(type)) {
-        await (new Promise(resolve => {
+        data = await (new Promise(resolve => {
           const reader = new FileReader();
           reader.addEventListener("load", () => { resolve(reader.result) }, false);
           reader.readAsText(data);
