@@ -1,47 +1,46 @@
 <template>
   <div
-    v-t-tooltip:top.create="state.description"
-    class="form-group">
+    v-t-tooltip:top.create = "state.description"
+    class                  = "form-group">
     <label
-      style="color:#ffffff !important;"
-      :for="state.name"
-      class="col-sm-12">{{state.label}}
+      style ="color:#fff !important;"
+      :for  = "state.name"
+      class = "col-sm-12">{{ state.label }}
     </label>
     <div class="col-sm-12">
       <select
-        :id="state.name"
-        v-select2="'type'"
-        ref="select2"
-        class="form-control qprocessing-output-vectorlayer-select">
+        :id       = "state.name"
+        v-select2 = "'type'"
+        ref       = "select2"
+        class     = "form-control qprocessing-output-vectorlayer-select"
+      >
         <option
-          v-for="({key, value}) in state.input.options.values"
-          :key="key"
-          :value="value">{{key}}
+          v-for  ="({key, value}) in state.input.options.values"
+          :key   = "key"
+          :value = "value">{{key}}
         </option>
       </select>
       <input
-        style="width:100%;"
-        class="magic-checkbox"
-        v-model="checked"
-        type="checkbox"
-        :id="`${state.name}_checkbox`">
-      <label
-        style="margin-top: 10px;"
-        :for="`${state.name}_checkbox`"
-        v-t-plugin="'qprocessing.outputs.outputvector.open_file_on_map'">
-      </label>
+        style   = "width:100%;"
+        class   = "magic-checkbox"
+        v-model = "checked"
+        type    = "checkbox"
+        :id     = "`${state.name}_checkbox`"
+      ><label
+        style       = "margin-top: 10px;"
+        :for       = "`${state.name}_checkbox`"
+        v-t-plugin = "'qprocessing.outputs.outputvector.open_file_on_map'"
+      ></label>
     </div>
   </div>
 </template>
 
 <script>
 
-const { GUI }                      = g3wsdk.gui;
-const { uniqueId, getRandomColor } = g3wsdk.core.utils;
-const {
-  createVectorLayerFromFile,
-  createStyleFunctionToVectorLayer
-}                                  = g3wsdk.core.geoutils;
+const { GUI }                       = g3wsdk.gui;
+const { uniqueId, getRandomColor }  = g3wsdk.core.utils;
+const { createVectorLayerFromFile } = g3wsdk.core.geoutils;
+
 export default {
   name: "OutputVectorLayer",
   props: {
@@ -69,56 +68,41 @@ export default {
     type(value) {
       this.changeSelect(value)
     },
-    async task(response={}) {
-     const {task_result={}} = response;
+    async task(res={}) {
+     const {task_result={}} = res;
      //get value from name of the output
-     const fileUrl = task_result[this.state.name];
+     const downloadUrl = task_result[this.state.name];
+
      //add to map
      if (this.checked) {
-       let promise, crs, name;
-       //need to convert shp to zip to use core geoutils createVectorLayerFromFile method
-       const type = 'shp' !== this.type  ? this.type : 'zip';
-       await fetch(fileUrl).then(async response => {
-         try {
-           name = response.headers.get("content-disposition").split('filename=')[1].replace(/"/g,'');
-         } catch(err){
-           name = `${uniqueId()}_${this.type}`;
-         }
-         const blob = await response.blob();
-         // in case of csv not add file to map
-         if ('csv' === type) {
-           return;
-         }
-         // case shapefile or kmz
-         if ('zip' === type || 'kmz' === type) {
-           promise = Promise.resolve(blob);
-         } else { //vase geojson, kml
-           promise = new Promise((resolve, reject) => {
-             const reader = new FileReader();
-             reader.addEventListener(
-               "load",
-               (evt) => {
-                   resolve(reader.result)
-               }, false);
-             reader.readAsText(blob);
-           })
-         }
-         const data = await promise;
-         const layer = await createVectorLayerFromFile({
-           name,
-           data,
-           crs: GUI.getService('map').getEpsg(), //@TODO
-           mapCrs: GUI.getService('map').getEpsg(),
-           type
-         });
-         layer.setStyle(createStyleFunctionToVectorLayer({
-           color: getRandomColor()
-         }));
-         GUI.getService('map').addExternalLayer(layer, {
-           type,
-           downloadUrl: fileUrl
-         });
-       });
+      let name =  `${uniqueId()}_${this.type}`, crs = GUI.getService('map').getEpsg();
+      // convert shp → zip
+      const type = 'shp' !== this.type  ? this.type : 'zip';
+      const response = await fetch(downloadUrl);
+      try {
+        name = response.headers.get("content-disposition").split('filename=')[1].replace(/"/g,'');
+      } catch(e) {
+        console.warn(e);
+      }
+      let data = await response.blob();
+
+      // skip adding csv file to map
+      if ('csv' === type) {
+        return;
+      }
+
+      // ie. geojson, kml
+      if (!['zip', 'kmz'].includes(type)) {
+        await (new Promise(resolve => {
+          const reader = new FileReader();
+          reader.addEventListener("load", () => { resolve(reader.result) }, false);
+          reader.readAsText(data);
+        }));
+      }
+
+      GUI.getService('map').addExternalLayer(
+        await createVectorLayerFromFile({ name, data, crs, mapCrs: crs, type }),
+        { type, downloadUrl, color: getRandomColor() });
      }
 
      //always add to results
