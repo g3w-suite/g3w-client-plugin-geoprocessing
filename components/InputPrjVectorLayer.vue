@@ -89,7 +89,6 @@
 
 import UploadVectorFile        from "./UploadVectorFile.vue";
 import DrawInputVectorFeatures from "./DrawInputVectorFeatures.vue";
-import Service                 from '../service';
 
 const {GUI} = g3wsdk.gui;
 const {selectMixin} = g3wsdk.gui.vue.Mixins;
@@ -158,6 +157,7 @@ export default {
      this.upload = true;
      this.errorUpload = false;
      try {
+        const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
        const {key, value} = await Service.uploadFile({
          file,
          inputName: this.state.name,
@@ -197,6 +197,7 @@ export default {
      * @param layerId
      */
     setDisabledSelectFeaturesCheckbox(layerId){
+      const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
       this.selected_features_disabled = Service.getLayerSelectedFeaturesIds(layerId).length === 0;
       //in case go disabled, uncheck checkbox
       if (true === this.selected_features_disabled) {
@@ -208,6 +209,7 @@ export default {
      * @param checked
      */
     setInputValueFromSelectedFeatures(checked) {
+      const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
       const currentLayerFeatureSelectedIds = Service.getLayerSelectedFeaturesIds(this.value);
       if (true === checked && currentLayerFeatureSelectedIds.length > 0) {
         this.state.value = `${this.value}:${currentLayerFeatureSelectedIds.join(',')}`
@@ -240,6 +242,8 @@ export default {
   },
 
   created() {
+    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
+
     //set initial values
     this.state.input.options.values = Service.getInputPrjVectorLayerData(this.state.input.options.datatypes);
 
@@ -291,7 +295,9 @@ export default {
     this.$emit('addinput', this.state);
     this.$emit('changeinput', this.state);
   },
-  beforeDestroy(){
+  beforeDestroy() {
+
+    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
 
     if (this.isSelectedFeatures) {
       Service.unregistersSelectedFeatureLayersEvent();

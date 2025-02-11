@@ -63,8 +63,6 @@
 
 <script>
 
-import Service from '../service';
-
 const { selectMixin } = g3wsdk.gui.vue.Mixins;
 
 export default {
@@ -126,6 +124,8 @@ export default {
      * @returns {*}
      */
     async getFieldsFromLayer(layerId, options={}){
+      const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
+
       this.loading = true;
       const fields = await Service.getFieldsFromLayer(layerId, options);
       this.loading = false;
@@ -184,7 +184,7 @@ export default {
 </script>
 
 <style scoped>
-//Replicate same scoped style in InputBase.vue
+/* Replicate same scoped style in InputBase.vue */
 label {
   text-align: left !important;
   padding-top: 0 !important;

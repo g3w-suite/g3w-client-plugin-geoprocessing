@@ -15,19 +15,30 @@
 </template>
 
 <script>
-import ModelPanel from '../modelpanel';
-import Service    from '../service';
+import ModelPanel   from '../components/ModelPanel.vue';
+
+const { Panel } = g3wsdk.gui;
+
 export default {
   name: "qprocessing-sidebar",
   data() {
+    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
     return {
       models: Service.config.models //get model from server plugin config
     };
   },
   methods:{
     showPanel(model) {
-      const panel = new ModelPanel({model});
-      panel.show();
+      new Panel({
+        id: `qprocessing-panel`,
+        title: `plugins.qprocessing.title`,
+        internalPanel: new (Vue.extend(ModelPanel))({
+          propsData: {
+            model: model.model, //send model as prop
+          }
+        }),
+        show: true,
+      });
     }
   },
 }

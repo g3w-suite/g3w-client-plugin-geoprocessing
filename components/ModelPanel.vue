@@ -97,20 +97,32 @@
 
 <script>
 
-import ModelInputs  from '../form/inputs';
-import ModelOutputs from '../form/outputs';
-import Service      from '../service';
-import ModelResults from '../modelresults';
+import ModelResults         from '../components/ModelResults.vue';
+import prjvectorlayer_input from '../components/InputPrjVectorLayer.vue';
+import prjrasterlayer_input from '../components/InputPrjRasterLayer.vue';
+import fieldchooser_input   from '../components/InputFieldChooser.vue';
+import outputvectorlayer    from "../components/OutputVectorLayer.vue";
+import outputrasterlayer    from "../components/OutputRasterLayer.vue";
+import outputfile           from "../components/OutputFile.vue";
 
-const {GUI}                = g3wsdk.gui;
+const { Panel }            = g3wsdk.gui;
 const { formInputsMixins } = g3wsdk.gui.vue.Mixins;
 
 export default {
   name: "modelPanel",
   mixins: [formInputsMixins],
   components: {
-    ...ModelInputs,
-    ...ModelOutputs
+    // inputs
+    ...g3wsdk.gui.vue.Inputs.InputsComponents,
+    prjvectorlayer_input,
+    prjrasterlayer_input,
+    prjvectorlayerfeature_input: prjvectorlayer_input,
+    fieldchooser_input,
+    // outputs
+    outputvectorlayer,
+    outputrasterlayer,
+    outputfile,
+    outputhtml: outputfile,
   },
   props: {
     model: {
@@ -197,6 +209,7 @@ export default {
       this.state.message.show = false;
       await this.$nextTick();
       try {
+        const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
         //Run task
         this.task = await Service.runModel({
           model: this.model,
@@ -215,8 +228,16 @@ export default {
      * Show Model results Panel
       */
     showModelResults() {
-      const resultspanel = new ModelResults({model: this.model});
-      resultspanel.show();
+      new Panel({
+        id: `qprocessing-panel-results`,
+        title: `${this.model.model.display_name.toUpperCase()}`,
+        internalPanel: new (Vue.extend(ModelResults))({
+          propsData: {
+            model: this.model.model,
+          }
+        }),
+        show: true,
+      });
       this.newResults = false;
     }
   },

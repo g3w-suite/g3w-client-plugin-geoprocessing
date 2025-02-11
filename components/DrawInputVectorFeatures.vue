@@ -17,8 +17,6 @@
 
 <script>
 
-import Service from "../service";
-
 const { GUI }     = g3wsdk.gui;
 const { tPlugin } = g3wsdk.core.i18n;
 
@@ -164,6 +162,8 @@ export default {
               },
               methods: {
                 uploadLayer: async (type) => {
+                  const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
+
                   const features = this.drawLayer.getSource().getFeatures();
                   await this.$nextTick();
                   //crate file

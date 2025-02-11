@@ -65,7 +65,6 @@
 </template>
 
 <script>
-import Service from '../service';
 
 const { selectMixin } = g3wsdk.gui.vue.Mixins;
 
@@ -98,6 +97,8 @@ export default {
   },
   methods: {},
   created() {
+
+    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
 
     this.state.input.options.values = Service.getInputPrjRasterLayerData();
 
