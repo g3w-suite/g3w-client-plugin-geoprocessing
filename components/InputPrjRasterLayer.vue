@@ -120,7 +120,7 @@ export default {
 </script>
 
 <style scoped>
-  //Replicate same scoped style in InputBase.vue
+  /* Replicate same scoped style in InputBase.vue */
   label {
     text-align: left !important;
     padding-top: 0 !important;
