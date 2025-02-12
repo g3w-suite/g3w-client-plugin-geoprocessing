@@ -1,5 +1,7 @@
-import i18n             from './i18n'
-import ModelPanel       from './components/ModelPanel.vue';
+import i18n        from './i18n'
+import ModelPanel  from './components/ModelPanel.vue';
+import FormInputs  from './form/inputs';
+import FormOutputs from './form/outputs';
 
 const { Plugin }                 = g3wsdk.core.plugin;
 const { ProjectsRegistry }       = g3wsdk.core.project;
@@ -88,7 +90,10 @@ new class extends Plugin {
     new Panel({
       id: `qprocessing-panel`,
       title: `plugins.qprocessing.title`,
-      internalPanel: new (Vue.extend(ModelPanel))({ propsData: { model } }),
+      internalPanel: new (Vue.extend(ModelPanel))({
+        propsData: { model },
+        components: { ...FormInputs, ...FormOutputs }
+      }),
       show: true,
     });
   }

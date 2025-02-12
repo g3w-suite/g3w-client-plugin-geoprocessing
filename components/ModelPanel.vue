@@ -88,13 +88,7 @@
 
 <script>
 
-import ModelResults         from '../components/ModelResults.vue';
-import prjvectorlayer_input from '../components/InputPrjVectorLayer.vue';
-import prjrasterlayer_input from '../components/InputPrjRasterLayer.vue';
-import fieldchooser_input   from '../components/InputFieldChooser.vue';
-import outputvectorlayer    from "../components/OutputVectorLayer.vue";
-import outputrasterlayer    from "../components/OutputRasterLayer.vue";
-import outputfile           from "../components/OutputFile.vue";
+import ModelResults from '../components/ModelResults.vue';
 
 const { Panel }            = g3wsdk.gui;
 const { formInputsMixins } = g3wsdk.gui.vue.Mixins;
@@ -181,19 +175,6 @@ function _handleCompleteModelResponse(response, {
 export default {
   name: "modelPanel",
   mixins: [formInputsMixins],
-  components: {
-    // inputs
-    ...g3wsdk.gui.vue.Inputs.InputsComponents,
-    prjvectorlayer_input,
-    prjrasterlayer_input,
-    prjvectorlayerfeature_input: prjvectorlayer_input,
-    fieldchooser_input,
-    // outputs
-    outputvectorlayer,
-    outputrasterlayer,
-    outputfile,
-    outputhtml: outputfile,
-  },
   props: {
     model: {
       required: true
