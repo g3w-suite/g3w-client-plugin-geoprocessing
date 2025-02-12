@@ -30,5 +30,4 @@ export default {
     'Point': "Point",
   },
   draw_filename: 'Draw layer',
-
 }

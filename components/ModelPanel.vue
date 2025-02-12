@@ -5,30 +5,30 @@
       <div class="skin-color">{{model.display_name.toUpperCase()}}</div>
     </section>
 
-    <!-- MODEL INPUTS SECTION   -->
+    <!-- INPUTS   -->
     <section class="qprocessing-model-inputs">
       <div class="title" >INPUTS</div>
       <divider/>
-
       <form class="form-horizontal g3w-form">
         <div class="box-primary">
           <div class="box-body">
             <component
-              v-for="input in model.inputs"
-              :key="input.name"
-              :modelId="model.id"
-              @register-change-input="registerChangeInputEvent"
-              @addinput="addToValidate"
-              @changeinput="_changeInput(input)"
-              :state="input"
-              :is="`${input.input.type}_input`"/>
+              v-for                  = "input in model.inputs"
+              :key                   = "input.name"
+              :modelId               = "model.id"
+              @register-change-input = "registerChangeInputEvent"
+              @addinput              = "addToValidate"
+              @changeinput           = "_changeInput(input)"
+              :state                 = "input"
+              :is                    = "`${input.input.type}_input`"
+            />
           </div>
         </div>
       </form>
 
     </section>
 
-    <!-- MODEL OUTPUTS SECTION   -->
+    <!-- OUTPUTS   -->
     <section class="qprocessing-model-outputs">
       <div class="title">OUTPUTS</div>
       <divider/>
@@ -36,59 +36,50 @@
           <div class="box-primary">
             <div class="box-body">
               <component
-                v-for="output in model.outputs"
-                :key="output.name"
-                @add-result-to-model-results="addResultToModel"
-                :state="output"
-                :task="task"
-                :is="`${output.input.type}`"/>
+                v-for                        = "output in model.outputs"
+                :key                         = "output.name"
+                @add-result-to-model-results = "addResultToModel"
+                :state                       = "output"
+                :task                        = "task"
+                :is                          = "`${output.input.type}`"
+              />
             </div>
           </div>
         </form>
     </section>
 
-    <!-- MODEL RESULTS SECTION   -->
+    <!-- MODEL RESULTS   -->
     <section class="qprocessing-model-results">
       <section style="display: flex; justify-content: space-between; align-items: center">
         <div class="title">RESULTS</div>
         <span
-          v-disabled="model.results.length === 0"
-          class="icon skin-color skin-border-color"
-          :class="[ g3wtemplate.getFontClass('list'), {'pulse': newResults}]"
-          @click.stop.prevent="showModelResults">
+          v-disabled          = "model.results.length === 0"
+          class               = "icon skin-color skin-border-color"
+          :class              = "[ g3wtemplate.getFontClass('list'), {'pulse': newResults}]"
+          @click.stop.prevent = "showModelResults">
         </span>
-
       </section>
-
       <divider/>
-
     </section>
 
+    <!-- FOOTER -->
     <section class="qprocess-model-footer">
       <div>
-        <progressbar
-          v-if="state.progress"
-          :progress="state.progress"/>
-
-        <template v-else>
-          <bar-loader :loading="state.loading"/>
-        </template>
-
+        <progressbar v-if="state.progress" :progress="state.progress" />
+        <bar-loader v-else :loading="state.loading" />
         <button
-          class="btn skin-background-color run"
-          @click.stop="run"
-          :disabled="!valid || state.loading">
+          class       = "btn skin-background-color run"
+          @click.stop = "run"
+          :disabled   = "!valid || state.loading">
           <i :class="g3wtemplate.font['run']"></i>
         </button>
-
         <div v-if="state.message.show">
          <span
-          class="message"
-          :style="{color: getMessageColor()}"
-           v-t-plugin="`qprocessing.run.messages.${state.message.type}`">
-         </span>
+          class       ="message"
+          :style      = "{color: getMessageColor()}"
+           v-t-plugin = "`qprocessing.run.messages.${state.message.type}`"
+          ></span>
         </div>
-
       </div>
     </section>
 
@@ -374,16 +365,16 @@ export default {
           if (input.value) {
             if (
               (input.input.type === 'prjvectorlayer') &&
-              input.value.startsWith(`${qprocessing.prefixCustomLayer.external}:`)
+              input.value.startsWith(`__g3w__external__:`)
             ) {
               //extract layer id form input.value
-              const [,layerExternalId] = input.value.split(`${qprocessing.prefixCustomLayer.external}:`);
+              const [,layerExternalId] = input.value.split(`__g3w__external__:`);
               //get external layer from catalog service
               const {crs, name} = GUI.getService('catalog').getExternalLayers({type: 'vector'}).find(layer => layer.id === layerExternalId);
               //get map ol layer from map
               const OLlayer = GUI.getService('map').getLayerById(layerExternalId);
               //create a geojson file from freatures
-              const file = qprocessing.createGeoJSONFileFromOLFeatures({
+              const file = qprocessing.createGeoJSONFile({
                 name,
                 features: OLlayer.getSource().getFeatures(),
                 crs

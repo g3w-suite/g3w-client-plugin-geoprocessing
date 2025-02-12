@@ -1,31 +1,23 @@
 <template>
   <div
-    class="qprocessing-upload-vector-file"
-    style="flex-grow: 2">
-
+    class = "qprocessing-upload-vector-file"
+    style = "flex-grow: 2"
+  >
     <section class="upload-file-content">
-
       <form
-        class="addlayer skin-border-color"
-        v-t-tooltip:top.create="'mapcontrols.add_layer_control.drag_layer'">
-
+        class                  = "addlayer skin-border-color"
+        v-t-tooltip:top.create = "'mapcontrols.add_layer_control.drag_layer'"
+      >
         <input
-          ref="file"
-          type="file"
-          title=" "
-          @change="updateFile"
-          :accept="accept">
-
+          ref     = "file"
+          type    = "file"
+          title   = " "
+          @change = "$emit('add-layer', { file: $refs.file.files[0], type: 'upload' })"
+          accept = ".zip,.geojson,.GEOJSON,.kml,.kmz,.KMZ,.KML,.json,.gpx,.gml,.csv"
+        />
         <div class="drag_and_drop">
-
-          <i
-            :class="g3wtemplate.getFontClass('cloud-upload')"
-            class="fa-2x"
-            aria-hidden="true">
-          </i>
-
+          <i :class="g3wtemplate.getFontClass('cloud-upload')" class="fa-2x" aria-hidden="true"></i>
         </div>
-
       </form>
     </section>
   </div>
@@ -48,28 +40,6 @@ export default {
       }
     }
   },
-  methods: {
-    updateFile() {
-      this.$emit('add-layer', {
-        file: this.$refs.file.files[0],
-        type: 'upload'
-      });
-    },
-  },
-  created(){
-    this.accept = [
-      'zip',
-      'geojson',
-      'GEOJSON',
-      'kml',
-      'kmz',
-      'KMZ',
-      'KML',
-      'json',
-      'gpx',
-      'gml',
-      'csv'].map(format => `.${format}`).join(',')
-  }
 }
 </script>
 

@@ -1,10 +1,9 @@
 import i18n             from './i18n'
-import SidebarComponent from './components/Sidebar.vue';
+import ModelPanel       from './components/ModelPanel.vue';
 
 const { Plugin }                 = g3wsdk.core.plugin;
-const { isSameBaseGeometryType } = g3wsdk.core.geoutils;
 const { ProjectsRegistry }       = g3wsdk.core.project;
-const { GUI }                    = g3wsdk.gui;
+const { GUI, Panel }             = g3wsdk.gui;
 
 new class extends Plugin {
   constructor() {
@@ -20,14 +19,9 @@ new class extends Plugin {
     // Show loading plugin icon
     this.setHookLoading({ loading: true });
 
-    this.registersSelectedFeatureLayersEvent = this.registersSelectedFeatureLayersEvent.bind(this);
-    this.emitChangeSelectedFeatures = this.emitChangeSelectedFeatures.bind(this);
-
-    //prefix file value to recognize which kind of file is loading
-    this.prefixCustomLayer = {
-      file: 'file',
-      external: '__g3w__external__'
-    };
+    this.emitChangeSelectedFeatures            = () => this.emit('change-selected-features');
+    this.registersSelectedFeatureLayersEvent   = this.registersSelectedFeatureLayersEvent.bind(this);
+    this.unregistersSelectedFeatureLayersEvent = this.unregistersSelectedFeatureLayersEvent.bind(this);
 
     //store layer fields base on layerId and datatype
     this.layerFields = {};
@@ -53,23 +47,32 @@ new class extends Plugin {
     });
 
     GUI.isReady().then(() => {
-      this.createSideBarComponent(SidebarComponent, {
+      this.createSideBarComponent({
+        data: () => ({ models: this.config.models, service: this }),
+        template: /* html */`
+          <ul
+            id    = "g3w-client-plugin-qprocessing"
+            class = "treeview-menu g3w-tools menu-items"
+          >
+            <li
+              v-for       = "model in models"
+              :key        = "model.id"
+              @click.stop = "service.showPanel(model)"
+            >
+              <i :class="g3wtemplate.getFontClass('tool')"></i>
+              <span>{{ model.display_name }}</span>
+            </li>
+          </ul>
+        `,
+      }, {
         id: 'qprocessing',
         title: `plugins.qprocessing.title`,
         collapsible: true,
         open: false,
         isolate: false,
-        iconConfig: {
-          color: 'green',
-          icon: 'tools',
-        },
+        iconColor: 'green',
+        icon: 'tools',
         mobile: true,
-        events: {
-          open: {
-            when: 'before',
-            cb:() => { /* TODO: add sample usage */ }
-          }
-        },
         sidebarOptions: {
           position: "spatialbookmarks"                     // can be a number or a string
         }
@@ -81,11 +84,13 @@ new class extends Plugin {
     });
   }
 
-  /**
-   * Method that emit change selected feature when a layer feature selection change
-   */
-  emitChangeSelectedFeatures() {
-    this.emit('change-selected-features');
+  showPanel(model) {
+    new Panel({
+      id: `qprocessing-panel`,
+      title: `plugins.qprocessing.title`,
+      internalPanel: new (Vue.extend(ModelPanel))({ propsData: { model } }),
+      show: true,
+    });
   }
 
   /**
@@ -107,36 +112,12 @@ new class extends Plugin {
 
   /**
    *
-   * @param layer external layer Object
-   * @param datatypes Array
-   * @returns {boolean}
-   */
-  isExternalLayerValidForInputDatatypes({ layer, datatypes=[] }={}) {
-    return (
-      undefined !== datatypes.find(type => 'anygeometry' === type) ||
-      undefined !== this.fromInputDatatypesToOLGeometryTypes(datatypes).find(type => isSameBaseGeometryType(type, layer.geometryType))
-    )
-  }
-
-  /**
-   * Convert datatype input vector layer to Ol geometries type
-   * @param datatypes
-   * @returns {*}
-   */
-  fromInputDatatypesToOLGeometryTypes(datatypes=[]) {
-    return datatypes
-      .filter(type => -1 !== ['point', 'line', 'polygon'].indexOf(type))
-      .map(type => ({ 'point': 'Point', 'line': 'LineString', 'polygon': 'Polygon' })[type]);
-  }
-
-  /**
-   *
    * @param features
    * @param name
    * @param crs
    * @returns {File}
    */
-  createGeoJSONFileFromOLFeatures({features=[], name, crs}={}) {
+  createGeoJSONFile({features=[], name, crs}={}) {
     return new File(
       [JSON.stringify(Object.assign(
         (new ol.format.GeoJSON()).writeFeaturesObject(features), {
@@ -165,11 +146,11 @@ new class extends Plugin {
       method: 'POST',
       body: data,
     });
-    const responseJson = await response.json();
-    if (responseJson.result) {
+    const json = await response.json();
+    if (json.result) {
       return {
         key: file.name,
-        value: `${this.prefixCustomLayer.file}:${responseJson.data.file}`
+        value: `file:${json.data.file}`
       }
     }
 

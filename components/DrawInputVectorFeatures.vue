@@ -1,17 +1,15 @@
 <template>
   <div
-    class="qprocessing-draw-vector-features"
-    style="font-size: 1.3em;">
-
+    class = "qprocessing-draw-vector-features"
+    style = "font-size: 1.3em;"
+  >
     <button
-      class="btn skin-background-color"
-      style="height: 100%; margin-right: 0 !important;"
-      @click.stop.prevent="toggled = !toggled">
-
+      class               = "btn skin-background-color"
+      style               = "height: 100%; margin-right: 0 !important;"
+      @click.stop.prevent = "toggled = !toggled"
+    >
       <i :class="[g3wtemplate.getFontClass('pencil')]"></i>
-
     </button>
-
   </div>
 </template>
 
@@ -167,7 +165,7 @@ export default {
                   const features = this.drawLayer.getSource().getFeatures();
                   await this.$nextTick();
                   //crate file
-                  const file = qprocessing.createGeoJSONFileFromOLFeatures({
+                  const file = qprocessing.createGeoJSONFile({
                     features,
                     name: `${tPlugin('qprocessing.draw_filename')}(${tPlugin('qprocessing.draw_types.'+type)})`
                   });

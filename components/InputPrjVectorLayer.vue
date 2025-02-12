@@ -1,78 +1,74 @@
 <template>
-  <div class="form-group" v-if="state.visible">
+  <div
+    v-if  = "state.visible"
+    class = "form-group"
+  >
+
     <slot name="label">
-      <label
-        :for="state.name"
-        v-disabled="!state.editable"
-        class="col-sm-12">{{ state.label }}
+      <label :for="state.name" v-disabled="!state.editable" class="col-sm-12">
+        {{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
       </label>
     </slot>
+
     <div class="col-sm-12">
 
-      <section class="vector-tools-context" v-if="showUploadFile" v-disabled="upload">
-          <section class="vector-tools">
-            <upload-vector-file
-              :upload="upload"
-              @add-layer="addLayer"/>
-            <draw-input-vector-features
-              :upload="upload"
-              @toggled-tool="showAddTempLayer"
-              :datatypes="state.input.options.datatypes"
-              @add-layer="addLayer"/>
-          </section>
-          <section class="vector-tools-message">
-            <div v-if="errorUpload" class="error-upload"> Errore </div>
-          </section>
+      <section v-if="showUploadFile" class="vector-tools-context"  v-disabled="upload">
+        <section class="vector-tools">
+          <upload-vector-file         :upload="upload" @add-layer="addLayer" />
+          <draw-input-vector-features :upload="upload" @toggled-tool="showAddTempLayer" :datatypes="state.input.options.datatypes" @add-layer="addLayer" />
+        </section>
+        <section class="vector-tools-message">
+          <div v-if="errorUpload" class="error-upload"> Errore </div>
+        </section>
       </section>
 
       <slot name="body">
-        <select v-select2="'value'" :id="state.name" ref="select_layer" style="width:100%;"  class="form-control">
-
+        <select
+          v-select2 = "'value'"
+          :id       = "state.name"
+          ref       = "select_layer"
+          style     = "width:100%;"
+          class     = "form-control"
+        >
           <option
-           v-for="value in state.input.options.values"
-           :key="value.value"
-           :value="value.value">{{ value.key }}
+            v-for  = "value in state.input.options.values"
+            :key   = "value.value"
+            :value = "value.value">{{ value.key }}
           </option>
-
         </select>
-
         <div
-          v-if="isSelectedFeatures"
-          v-disabled="selected_features_disabled"
-          class="prjvectorlayerfeature-only-selected-features">
-
-          <input style="width:100%;"
-            class="magic-checkbox"
-            v-model="selected_features_checked"
-            type="checkbox"
-            :id="`${state.name}_checkbox`">
-
+          v-if       = "isSelectedFeatures"
+          v-disabled = "selected_features_disabled"
+          class      = "prjvectorlayerfeature-only-selected-features"
+        >
+          <input
+            style   = "width:100%;"
+            class   = "magic-checkbox"
+            v-model = "selected_features_checked"
+            type    = "checkbox"
+            :id     = "`${state.name}_checkbox`"
+          />
           <label
-            style="margin-top: 10px;"
-            :for="`${state.name}_checkbox`"
-            v-t-plugin="'qprocessing.inputs.prjvectorlayerfeature.selected_features'">
+            style      = "margin-top: 10px;"
+            :for       = "`${state.name}_checkbox`"
+            v-t-plugin = "'qprocessing.inputs.prjvectorlayerfeature.selected_features'">
           </label>
-
         </div>
-
       </slot>
 
       <slot name="message">
-
         <p
-          v-if="notvalid"
-          class="g3w-long-text error-input-message"
-          style="margin: 0"
-          v-html="state.validate.message">
+          v-if   = "notvalid"
+          class  = "g3w-long-text error-input-message"
+          style  = "margin: 0"
+          v-html = "state.validate.message">
         </p>
-
         <p
-          v-else-if="state.info"
-          style="margin: 0 "
-          v-html="state.info">
-        </p>
-
+          v-else-if = "state.info"
+          style     = "margin: 0 "
+          v-html    = "state.info"
+        ></p>
       </slot>
 
       <div
@@ -236,6 +232,19 @@ export default {
     },
 
     /**
+     *
+     * @param layer external layer Object
+     * @param datatypes Array
+     * @returns {boolean}
+     */
+    isExternalLayerValidForInputDatatypes({ layer, datatypes=[] }={}) {
+      return (
+        undefined !== datatypes.find(type => 'anygeometry' === type) ||
+        undefined !== datatypes.map(type => ({ 'point': 'Point', 'line': 'LineString', 'polygon': 'Polygon' })[type]).filter(Boolean).find(type => isSameBaseGeometryType(type, layer.geometryType))
+      )
+    },
+
+    /**
      * Get all Project Vector Layers that has geometry types
      * @param datatypes <Array> of String
      *   'nogeometry',
@@ -256,7 +265,7 @@ export default {
       const nogeometry = undefined !== datatypes.find(data_type => data_type === 'nogeometry');
   
       //get geometry_types only from data_types array
-      const geometry_types = qprocessing.fromInputDatatypesToOLGeometryTypes(datatypes);
+      const geometry_types = datatypes.map(type => ({ 'point': 'Point', 'line': 'LineString', 'polygon': 'Polygon' })[type]).filter(Boolean);
   
       ProjectsRegistry.getCurrentProject().getLayers()
         //exclude base layer
@@ -299,13 +308,13 @@ export default {
         GUI.getService('catalog').getExternalLayers({
           type: 'vector'
         }).forEach(layer => {
-          if (qprocessing.isExternalLayerValidForInputDatatypes({
+          if (this.isExternalLayerValidForInputDatatypes({
             layer,
             datatypes
           })) {
             layers.push({
               key:layer.name,
-              value: `${qprocessing.prefixCustomLayer.external}:${layer.id}`
+              value: `__g3w__external__:${layer.id}`
             })
           }
         })
@@ -371,10 +380,10 @@ export default {
         if ('vector' !== type) {
           return;
         }
-        if (qprocessing.isExternalLayerValidForInputDatatypes({ layer, datatypes: this.state.input.options.datatypes })) {
+        if (this.isExternalLayerValidForInputDatatypes({ layer, datatypes: this.state.input.options.datatypes })) {
           this.state.input.options.values.push({
             key:layer.name,
-            value: `${qprocessing.prefixCustomLayer.external}:${layer.id}`
+            value: `__g3w__external__:${layer.id}`
           });
         }
       })

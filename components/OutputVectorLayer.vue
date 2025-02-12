@@ -3,7 +3,7 @@
     v-t-tooltip:top.create = "state.description"
     class                  = "form-group">
     <label
-      style ="color:#fff !important;"
+      style = "color:#fff !important;"
       :for  = "state.name"
       class = "col-sm-12">{{ state.label }}
     </label>
@@ -15,7 +15,7 @@
         class     = "form-control qprocessing-output-vectorlayer-select"
       >
         <option
-          v-for  ="({key, value}) in state.input.options.values"
+          v-for  = "({key, value}) in state.input.options.values"
           :key   = "key"
           :value = "value">{{key}}
         </option>
@@ -27,7 +27,7 @@
         type    = "checkbox"
         :id     = "`${state.name}_checkbox`"
       ><label
-        style       = "margin-top: 10px;"
+        style      = "margin-top: 10px;"
         :for       = "`${state.name}_checkbox`"
         v-t-plugin = "'qprocessing.outputs.outputvector.open_file_on_map'"
       ></label>
