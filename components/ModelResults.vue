@@ -22,7 +22,7 @@
 
                     <i
                       :class="g3wtemplate.font['download']"
-                      @click.stop.prevent="downloadResult(url)">
+                      @click.stop.prevent="downloadFile(url)">
                     </i>
                     <i
                       :class="g3wtemplate.font['trash']"
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-const { downloadFile } = g3wsdk.core.utils;
+const { ApplicationState } = g3wsdk.core;
 
 export default {
   name: "ModelResults",
@@ -55,10 +55,25 @@ export default {
     removeResult(result, index) {
       result.urls.splice(index, 1);
     },
-    downloadResult(url) {
-      downloadFile({
-        url
-      })
+    async downloadFile(url) {
+      try {
+        ApplicationState.download = true;
+        const response = url && await fetch(url, {
+          headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
+          signal:  AbortSignal.timeout(60000),
+        });
+        if (!response?.ok) {
+          throw (await response.json()).message;
+        }
+        const blob = await response.blob();
+        Object.assign(document.createElement('a'), {
+          href:     URL.createObjectURL(blob),
+          download: (response.headers.get('content-disposition') || 'filename=g3w_download_file').split('filename=').at(-1).split('filename=').at(-1)
+        }).click();
+        URL.revokeObjectURL(blob);
+      } finally {
+        ApplicationState.download = false;
+      }
     }
   }
 }
