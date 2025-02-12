@@ -30,7 +30,7 @@ new class extends Plugin {
 
     // transpile model inputs As editing form inputs
     // manage and adapt model inputs with all input editing attributes needed
-    this.config.models?.forEach(model => {
+    (this.config.models || []).forEach(model => {
       model.inputs.forEach(input => {
         input.visible = true; // set visibility of input
         // implement validate object

@@ -56,7 +56,7 @@ export default {
           headers: { 'Access-Control-Expose-Headers': 'Content-Disposition' }, // get filename from server
           signal:  AbortSignal.timeout(60000),
         });
-        if (!response?.ok) {
+        if (response && !response.ok) {
           throw (await response.json()).message;
         }
         const blob = await response.blob();
