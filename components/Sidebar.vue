@@ -28,7 +28,6 @@ export default {
   },
   methods:{
     showPanel(model) {
-      console.log(this, model);
       new Panel({
         id: `qprocessing-panel`,
         title: `plugins.qprocessing.title`,
