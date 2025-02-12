@@ -23,7 +23,7 @@ export default {
   name: "qprocessing-sidebar",
   data() {
     return {
-      models: g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService().config.models //get model from server plugin config
+      models: g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').config.models //get model from server plugin config
     };
   },
   methods:{

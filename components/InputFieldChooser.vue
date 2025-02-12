@@ -63,7 +63,9 @@
 
 <script>
 
-const { selectMixin } = g3wsdk.gui.vue.Mixins;
+const { selectMixin }      = g3wsdk.gui.vue.Mixins;
+const { XHR }              = g3wsdk.core.utils;
+const { ProjectsRegistry } = g3wsdk.core.project;
 
 export default {
   name: "InputFieldChooser",
@@ -118,16 +120,52 @@ export default {
 
   methods: {
     /**
+     * Method to extract fields from project layerId based on options
+     *
+     * @param layerId
+     * @param options: <Object> datatype
+     */
+    async _getFieldsFromLayer(layerId, params={}) {
+      const qprocessing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing');
+
+      // Check if it already fills by layerId
+      if (undefined === qprocessing.layerFields[layerId]) {
+        qprocessing.layerFields[layerId] = {};
+      }
+
+      // check if it was fill based on params
+      const GIVE_ME_A_NAME = qprocessing.layerFields[layerId][JSON.stringify(params)];
+
+      //check if layerId belong to project layer or is id of temporary upload layer
+      if (undefined === GIVE_ME_A_NAME && undefined === ProjectsRegistry.getCurrentProject().getLayers().find(layer => layer.id === layerId)) {
+        qprocessing.layerFields[layerId][JSON.stringify(params)] = [];
+      } else if (undefined === GIVE_ME_A_NAME) {
+        try {
+          //do request to api
+          const response = await XHR.get({
+            url: `${qprocessing.config.urls.fields}${ProjectsRegistry.getCurrentProject().getId()}/${layerId}/`,
+            params
+          });
+          if (true === response.result) {
+            qprocessing.layerFields[layerId][JSON.stringify(params)] = response.fields;
+          }
+        } catch(err) {
+          console.warn(err);
+          return [];
+        }
+      }
+      return qprocessing.layerFields[layerId][JSON.stringify(params)];
+    },
+
+    /**
      * Get all fields by layers
      * @param layerId
      * @param options
      * @returns {*}
      */
     async getFieldsFromLayer(layerId, options={}){
-      const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
-
       this.loading = true;
-      const fields = await Service.getFieldsFromLayer(layerId, options);
+      const fields = await this._getFieldsFromLayer(layerId, options);
       this.loading = false;
       return fields;
     },

@@ -107,6 +107,85 @@ import outputfile           from "../components/OutputFile.vue";
 
 const { Panel }            = g3wsdk.gui;
 const { formInputsMixins } = g3wsdk.gui.vue.Mixins;
+const { XHR }              = g3wsdk.core.utils;
+const { ProjectsRegistry } = g3wsdk.core.project;
+const { TaskService }      = g3wsdk.core.task;
+const { GUI }              = g3wsdk.gui;
+
+/**
+ * Handel Async or Sync response error
+ * @param response
+ * @param reject
+ * @private
+ */
+function _handleErrorModelResponse(response, {
+  reject,
+}) {
+  const {status, exception} = response;
+  let statusError = false;
+  let textMessage = false;
+  let message;
+
+  switch(status) {
+    case '500':
+    case 500:
+      message = (
+        response.responseJSON ?
+        (response.responseJSON.exception || response.responseJSON.error.message) :
+        'server_error'
+      );
+      textMessage = undefined !== exception;
+      statusError = true;
+      break;
+    case 'error':
+      message = exception;
+      textMessage = true;
+      statusError = true;
+      break;
+  }
+
+  // in case of status error
+  if (statusError) {
+    //show a user message with error
+    GUI.showUserMessage({
+      type: 'alert',
+      message,
+      textMessage
+    });
+
+    reject({
+      statusError:true,
+      timeout: false
+    })
+  }
+
+  return statusError;
+}
+
+/**
+ * TO handle complete task ot sync request model
+ * @since v3.7.0
+ * @param response server response
+ * @param resolve resolve method of a Promise
+ * @param reject reject method of a Promise
+ * @private
+ */
+function _handleCompleteModelResponse(response, {
+  resolve,
+  reject,
+}) {
+  let {result, task_result, data} = response;
+  //case sync request model return data instead of task_result
+  if (data) {
+    task_result = data;
+  }
+  //in case of task_result null
+  if (null === task_result || false === result) {
+    reject({});
+  } else {
+    resolve({result, task_result});
+  }
+}
 
 export default {
   name: "modelPanel",
@@ -181,7 +260,7 @@ export default {
      */
     registerChangeInputEvent({inputName, handler}={}) {
 
-      if ("undefined" === typeof this.subscribe_change_input[inputName]) {
+      if (undefined === this.subscribe_change_input[inputName]) {
         this.subscribe_change_input[inputName] = []
       }
 
@@ -209,9 +288,8 @@ export default {
       this.state.message.show = false;
       await this.$nextTick();
       try {
-        const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
         //Run task
-        this.task = await Service.runModel({
+        this.task = await this.runModel({
           model: this.model,
           state: this.state
         });
@@ -222,8 +300,154 @@ export default {
 
       this.state.loading = false;
       this.state.message.show = true;
-
     },
+
+  /**
+   * Method to run model
+   * @param model
+   * @param state
+   * @returns {Promise<unknown>}
+   */
+    runModel({ model, state } = {}) {
+      const qprocessing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing');
+
+      return new Promise(async (resolve, reject) => {
+        let timeoutprogressintervall;
+        /**
+         * listener method to handle task request
+         * @param task_id
+         * @param timeout
+         * @param response
+         */
+        const listener = ({task_id, timeout, response}) => {
+          const {progress, status} = response;
+          // in case of complete
+          if (status === 'complete') {
+            //stop current task
+            TaskService.stopTask({task_id});
+            timeoutprogressintervall = null;
+            _handleCompleteModelResponse(response, { resolve, reject })
+          } else if (status === 'executing') {
+            if (state.progress === null || state.progress === undefined) {
+              timeoutprogressintervall = Date.now();
+            } else {
+              if (progress > state.progress) {
+                timeoutprogressintervall = Date.now();
+              } else {
+                if ((Date.now() - timeoutprogressintervall) > 600000){
+                  TaskService.stopTask({task_id});
+                  GUI.showUserMessage({
+                    type: 'warning',
+                    message: 'Timeout',
+                    autoclose: true
+                  });
+                  state.progress = null;
+                  timeoutprogressintervall = null;
+                  reject({
+                    timeout: true
+                  })
+                }
+              }
+            }
+            state.progress = progress;
+          }
+          else {
+            const statusError = _handleErrorModelResponse(response, {
+              reject,
+            });
+
+            if (statusError) {
+              state.progress = null;
+              timeoutprogressintervall = null;
+
+              //stop task
+              TaskService.stopTask({task_id});
+            }
+          }
+        };
+
+        //create inputs parmeters
+        const inputs = {};
+
+        //Loop through input model
+        for (const input of model.inputs) {
+          if (input.value) {
+            if (
+              (input.input.type === 'prjvectorlayer') &&
+              input.value.startsWith(`${qprocessing.prefixCustomLayer.external}:`)
+            ) {
+              //extract layer id form input.value
+              const [,layerExternalId] = input.value.split(`${qprocessing.prefixCustomLayer.external}:`);
+              //get external layer from catalog service
+              const {crs, name} = GUI.getService('catalog').getExternalLayers({type: 'vector'}).find(layer => layer.id === layerExternalId);
+              //get map ol layer from map
+              const OLlayer = GUI.getService('map').getLayerById(layerExternalId);
+              //create a geojson file from freatures
+              const file = qprocessing.createGeoJSONFileFromOLFeatures({
+                name,
+                features: OLlayer.getSource().getFeatures(),
+                crs
+              });
+              //upload file to server
+              try {
+                const {value} = await qprocessing.uploadFile({
+                  modelId: model.id,
+                  inputName: input.name,
+                  file
+                });
+                //change input value value from new value
+                input.value = value;
+              } catch(err) {
+                //reject
+                reject(err);
+              }
+            }
+            inputs[input.name] = input.value;
+          }
+        }
+
+        //create outputs paramter
+        const outputs = model.outputs.reduce((accumulator, output) => {
+          if (output.value) {
+            accumulator[output.name] = output.value;
+          }
+          return accumulator;
+        }, {});
+
+        const data = {
+          inputs,
+          outputs,
+        }
+
+        const url = `${qprocessing.config.urls.run}${model.id}/${ProjectsRegistry.getCurrentProject().getId()}/` // url model
+
+        //Check if configured in async mode
+        if (qprocessing.config.async) {
+          // start to run Task
+          TaskService.runTask({
+            url,
+            taskUrl: qprocessing.config.urls.taskinfo, // url to ask task is end
+            params: {
+              data: JSON.stringify(data)
+            }, // request params
+            method: 'POST',
+            listener
+          })
+        } else { //get result directly
+          XHR.post({
+            url,
+            data: JSON.stringify(data),
+            contentType: 'application/json'
+          })
+            .then((response)  => { _handleCompleteModelResponse(response, { resolve, reject }) })
+            .catch((response) => {
+              response.status = 500;
+              _handleErrorModelResponse(response, { reject });
+            })
+        }
+      })
+    },
+
     /**
      * Show Model results Panel
       */

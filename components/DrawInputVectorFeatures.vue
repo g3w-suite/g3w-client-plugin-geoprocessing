@@ -115,7 +115,7 @@ export default {
           closable: false,
           hooks: {
             body: {
-              template: `
+              template: /* html */`
                 <div style="width: 100%; padding: 5px;" v-disabled="state.loading">
                 <!-- NB: it makes use of built-in g3w-client directive: "v-select2" -->
                 <select
@@ -162,12 +162,12 @@ export default {
               },
               methods: {
                 uploadLayer: async (type) => {
-                  const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
+                  const qprocessing = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing');
 
                   const features = this.drawLayer.getSource().getFeatures();
                   await this.$nextTick();
                   //crate file
-                  const file = Service.createGeoJSONFileFromOLFeatures({
+                  const file = qprocessing.createGeoJSONFileFromOLFeatures({
                     features,
                     name: `${tPlugin('qprocessing.draw_filename')}(${tPlugin('qprocessing.draw_types.'+type)})`
                   });

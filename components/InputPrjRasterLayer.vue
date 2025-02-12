@@ -66,7 +66,8 @@
 
 <script>
 
-const { selectMixin } = g3wsdk.gui.vue.Mixins;
+const { selectMixin }      = g3wsdk.gui.vue.Mixins;
+const { ProjectsRegistry } = g3wsdk.core.project;
 
 export default {
   name: "InputPrjRasterLayer",
@@ -95,12 +96,26 @@ export default {
       this.$emit('changeinput', this.state);
     }
   },
-  methods: {},
+  methods: { },
   created() {
 
-    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
-
-    this.state.input.options.values = Service.getInputPrjRasterLayerData();
+    /**
+     * Get all Project Vector Layers that has geometry types
+     * @param datatypes <Array> of String
+     *   'nogeometry',
+     *   'point',
+     *   'line',
+     *   'polygon',
+     *   'anygeometry'
+     * return <Array>
+     */
+    this.state.input.options.values = ProjectsRegistry.getCurrentProject().getLayers()
+      //exclude base layer
+      .filter(layer => !layer.baselayer && (undefined !== layer.source && layer.source.type === 'gdal'))
+      .map(layer => ({
+        key: layer.name,
+        value: layer.id
+      }));
 
     if (this.state.input.options.values.length > 0) {
       //set initial value
