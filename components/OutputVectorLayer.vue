@@ -38,7 +38,7 @@
 <script>
 
 const { GUI }                       = g3wsdk.gui;
-const { uniqueId, getRandomColor }  = g3wsdk.core.utils;
+const { uniqueId }                  = g3wsdk.core.utils;
 const { createVectorLayerFromFile } = g3wsdk.core.geoutils;
 
 export default {
@@ -102,7 +102,7 @@ export default {
 
       GUI.getService('map').addExternalLayer(
         await createVectorLayerFromFile({ name, data, crs, mapCrs: crs, type }),
-        { type, downloadUrl, color: getRandomColor() });
+        { type, downloadUrl, color: `#${((1<<24)*Math.random() | 0).toString(16)}` });
      }
 
      //always add to results
