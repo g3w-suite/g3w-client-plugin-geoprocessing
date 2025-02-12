@@ -22,21 +22,17 @@ const { Panel } = g3wsdk.gui;
 export default {
   name: "qprocessing-sidebar",
   data() {
-    const Service = g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService();
     return {
-      models: Service.config.models //get model from server plugin config
+      models: g3wsdk.core.plugin.PluginsRegistry.getPlugin('qprocessing').getService().config.models //get model from server plugin config
     };
   },
   methods:{
     showPanel(model) {
+      console.log(this, model);
       new Panel({
         id: `qprocessing-panel`,
         title: `plugins.qprocessing.title`,
-        internalPanel: new (Vue.extend(ModelPanel))({
-          propsData: {
-            model: model.model, //send model as prop
-          }
-        }),
+        internalPanel: new (Vue.extend(ModelPanel))({ propsData: { model } }),
         show: true,
       });
     }
