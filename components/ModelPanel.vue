@@ -230,10 +230,10 @@ export default {
     showModelResults() {
       new Panel({
         id: `qprocessing-panel-results`,
-        title: `${this.model.model.display_name.toUpperCase()}`,
+        title: `${this.model.display_name.toUpperCase()}`,
         internalPanel: new (Vue.extend(ModelResults))({
           propsData: {
-            model: this.model.model,
+            model: this.model,
           }
         }),
         show: true,
